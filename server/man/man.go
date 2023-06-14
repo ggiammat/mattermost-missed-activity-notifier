@@ -5,9 +5,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/ggiammat/missed-activity-notifications/server/backend"
-	"github.com/ggiammat/missed-activity-notifications/server/model"
-	"github.com/ggiammat/missed-activity-notifications/server/userstatus"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/userstatus"
 	"github.com/pkg/errors"
 )
 
@@ -33,10 +33,10 @@ func (man *MissedActivityNotifier) ProcessMessageValidForNotification(post *mode
 	}
 
 	// at the moment this check is done in the backend and so it is useless here
-	//if post.Type != "" {
-	//	cma.AppendLog("Removing post \"%s\" because it is a system message", post.Message)
-	//	return false
-	//}
+	// if post.Type != "" {
+	//  	cma.AppendLog("Removing post \"%s\" because it is a system message", post.Message)
+	//  	return false
+	// }
 
 	if !post.IsRoot() && !conv.Following && !user.MANPreferences.NotifyRepliesInNotFollowedThreads {
 		if user.MANPreferences.IncludeCountOfRepliesInNotFollowedThreads {

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ggiammat/missed-activity-notifications/server/backend"
-	"github.com/ggiammat/missed-activity-notifications/server/model"
-	"github.com/ggiammat/missed-activity-notifications/server/userstatus"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/userstatus"
 	"github.com/mergestat/timediff"
 	"github.com/olekukonko/tablewriter"
 )

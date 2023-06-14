@@ -11,9 +11,9 @@ import (
 
 	_ "net/http/pprof"
 
-	"github.com/ggiammat/missed-activity-notifications/server/backend"
-	"github.com/ggiammat/missed-activity-notifications/server/model"
-	"github.com/ggiammat/missed-activity-notifications/server/userstatus"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/userstatus"
 	"github.com/mattermost/mattermost-plugin-api/cluster"
 	mm_model "github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin"

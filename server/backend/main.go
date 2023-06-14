@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/ggiammat/missed-activity-notifications/server/model"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 	mm_model "github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin"
 	"github.com/patrickmn/go-cache"

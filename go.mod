@@ -1,4 +1,4 @@
-module github.com/ggiammat/missed-activity-notifications
+module github.com/ggiammat/mattermost-missed-activity-notifier
 
 go 1.18
 

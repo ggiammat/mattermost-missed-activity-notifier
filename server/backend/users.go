@@ -3,7 +3,7 @@ package backend
 import (
 	"fmt"
 
-	"github.com/ggiammat/missed-activity-notifications/server/model"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 	mm_model "github.com/mattermost/mattermost-server/v6/model"
 	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"

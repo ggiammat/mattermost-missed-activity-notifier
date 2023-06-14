@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/ggiammat/missed-activity-notifications/server/model"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 	"github.com/pkg/errors"
 )
 
@@ -49,7 +49,10 @@ func (mm *MattermostBackend) ResetPreferenceEnabled(user *model.User) error {
 
 	delete(pref.UserPreferences, user.Id)
 
-	mm.saveKV()
+	errS := mm.saveKV()
+	if errS != nil {
+		return errors.Wrap(errS, "error saving kvstore")
+	}
 	mm.usersCache.Delete(user.Id)
 
 	return nil
@@ -78,7 +81,10 @@ func (mm *MattermostBackend) SetPreferencesForUser(userID string, prefs model.MA
 	}
 
 	store.UserPreferences[userID] = prefs
-	mm.saveKV()
+	errS := mm.saveKV()
+	if errS != nil {
+		return errors.Wrap(errS, "error saving kvstore")
+	}
 	mm.usersCache.Delete(userID)
 	return nil
 }
@@ -184,7 +190,10 @@ func (mm *MattermostBackend) getKVStore() (*MANKVStore, error) {
 			UserPreferences:       map[string]model.MANUserPreferences{},
 			LastNotifiedTimestamp: 0,
 		}
-		mm.saveKV()
+		errS := mm.saveKV()
+		if errS != nil {
+			return nil, errors.Wrap(errS, "error saving kvstore")
+		}
 		return mm.kvStoreCache, nil
 	}
 

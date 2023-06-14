@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ggiammat/missed-activity-notifications/server/backend"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
 )
 
 func TrackUserStatuses(statuses *UserStatusTracker, backend *backend.MattermostBackend, timestamp int64) {

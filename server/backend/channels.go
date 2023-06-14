@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ggiammat/missed-activity-notifications/server/model"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 	"github.com/patrickmn/go-cache"
 )
 

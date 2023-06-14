@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ggiammat/missed-activity-notifications/server/man"
-	"github.com/ggiammat/missed-activity-notifications/server/output"
-	"github.com/ggiammat/missed-activity-notifications/server/userstatus"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/man"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/output"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/userstatus"
 	"github.com/mattermost/mattermost-plugin-api/cluster"
 	"github.com/pkg/errors"
 )

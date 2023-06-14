@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ggiammat/missed-activity-notifications/server/backend"
-	"github.com/ggiammat/missed-activity-notifications/server/model"
-	"github.com/ggiammat/missed-activity-notifications/server/output"
-	"github.com/ggiammat/missed-activity-notifications/server/userstatus"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/output"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/userstatus"
 	mm_model "github.com/mattermost/mattermost-server/v6/model"
 
 	"github.com/mattermost/mattermost-server/v6/plugin"
