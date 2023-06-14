@@ -1,0 +1,9 @@
+{
+    "eslint.workingDirectories": [
+        "webapp"
+    ],
+    "go.lintTool": "golangci-lint",
+    "go.lintFlags": [
+    "--fast"
+    ]
+}

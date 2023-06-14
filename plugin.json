@@ -1,0 +1,156 @@
+{
+    "id": "com.mattermost.missed-activity-notifier",
+    "name": "Missed Activity Notifier",
+    "description": "Sends periodic email notifications to users about recent unread messages",
+    "homepage_url": "https://github.com/ggiammat/mattermost-missed-activity-notifier",
+    "support_url": "https://github.com/ggiammat/mattermost-missed-activity-notifier/issues",
+    "release_notes_url": "https://github.com/ggiammat/mattermost-missed-activity-notifier/releases/tag/v0.1.0",
+    "icon_path": "assets/man-icon.svg",
+    "version": "0.1.0",
+    "min_server_version": "6.2.1",
+    "server": {
+        "executables": {
+            "linux-amd64": "server/dist/plugin-linux-amd64",
+            "linux-arm64": "server/dist/plugin-linux-arm64",
+            "darwin-amd64": "server/dist/plugin-darwin-amd64",
+            "darwin-arm64": "server/dist/plugin-darwin-arm64",
+            "windows-amd64": "server/dist/plugin-windows-amd64.exe"
+        }
+    }, 
+    "settings_schema": {
+        "header": "The plugin has several configuration parameters. For most of them, the default value is good in most of the use cases. In fact, they have been introduced during the development more for debugging purposes than real customization needs. **Please, set \"Dry Run\" to \"false\" to start sending emails.** By default, the \"Dry Run\" parameter is true, for saftey reasons, otherwise the plugin will start to send emails as soon as it has been installed without the possibility for the administartor to configure it.",
+        "footer": "To report an issue, make a suggestion or a contribution, check the repository at https://github.com/ggiammat/mattermost-missed-activity-notifier",
+        "settings": [
+            {
+                "key": "DryRun",
+                "display_name": "Dry Run",
+                "type": "bool",
+                "help_text": "**Set to true to start sending email**. Do not send emails, just log the execution. Useful for debugging and testing purposes",
+                "default": true
+            },
+            {
+                "key": "RunInterval",
+                "display_name": "Run interval (minutes):",
+                "type": "number",
+                "help_text": "The time interval with which the plugin will check for unread messages and will send email notifications. This interval also influences the internal caches expiration time (set at *interval/2*).",
+                "default": 120
+            },
+            {
+                "key": "IgnoreMessagesNewerThan",
+                "display_name": "Grace Period (minutes)",
+                "type": "number",
+                "help_text": "The minimum time in minutes before notifyng a new message. When the plugin runs (determined by *RunInterval*), messages newer than this time period will be ignored (they will be processed in the next run).",
+                "default": 15
+            },
+            {
+                "key": "NotifyOnlyNewMessagesFromStartup",
+                "display_name": "Ignore messages before plugin startup",
+                "type": "bool",
+                "help_text": "If true only messages posted after the plugin startup time will be notified. If false, on the first run the plugin will process all messages from the last notified timestamp (stored in the database)",
+                "default": false
+            },
+            {
+                "key": "KeepStatusHistoryInterval",
+                "display_name": "Keep user status history interval",
+                "type": "number",
+                "help_text": "The plugin records and keeps in memory the status of users to calculate if Mattermost already sent some email notifications and avoid sending it again",
+                "default": 168
+            },
+
+            {
+                "key": "UserDefaultPrefEnabled",
+                "display_name": "[USER DEFAULT] Plugin Enabled",
+                "type": "bool",
+                "help_text": "If true, the plugin is active for all users by default and needs to be explicitly disabled on per-user basis. If false, the plugin is disabled unless the user explicitly activate",
+                "default": true
+            },
+            {
+                "key": "UserDefaultPrefNotifyNotFollowed",
+                "display_name": "[USER DEFAULT] Notifies replies in not followed threads",
+                "type": "bool",
+                "help_text": "Whether to include or not in notification emails the unread replies in not followed threads. This is the default value and can be overridden on per-user basis",
+                "default": false
+            },
+            {
+                "key": "UserDefaultPrefCountNotFollowed",
+                "display_name": "[USER DEFAULT] Show count of replies in not followed threads",
+                "type": "bool",
+                "help_text": "Whether to include or not in notification emails the count of unread replies in not followed threads (useful if UserDefaultPrefNotifyNotFollowed is false). This is the default value and can be overridden on per-user basis",
+                "default": true
+            },
+            {
+                "key": "UserDefaultPrefCountMM",
+                "display_name": "[USER DEFAULT] Show count of notifications sent by Mattermost",
+                "type": "bool",
+                "help_text": "Whether to include or not in notification emails the count of unread messages already notified by Mattermost. This is the default value and can be overridden on per-user basis",
+                "default": true
+            },
+            {
+                "key": "UserDefaultPrefCountPreviouslyNotified",
+                "display_name": "[USER DEFAULT] Show count of previously notified messages",
+                "type": "bool",
+                "help_text": "Whether to include or not in notification emails the count of messages notified in previous emails, but still unread. This is the default value and can be overridden on per-user basis",
+                "default": true
+            },
+
+            {
+                "key": "EmailSubTitle",
+                "display_name":"[EMAIL] Template SubTitle",
+                "type": "text",
+                "help_text": "The message that will appear in the notification above the list of messages",
+                "default": "Since the last time you connected, new messages have been posted that might be of interest for you"
+            },
+            {
+                "key": "EmailButtonText",
+                "display_name": "[EMAIL] Template Button Text",
+                "type": "text",
+                "help_text": "The text of the message in the button that will open the Mattermost website",
+                "default": "See in Mattermost"
+            },
+            {
+                "key": "EmailFooterLine1",
+                "display_name": "[EMAIL] Template Footer Line 1",
+                "type": "text",
+                "help_text": "The text of the first line of the footer that will appear in the emails",
+                "default": "You are receiving this email from the Missed Activity Plugin. Use the command \"/missedactivity help\" in Mattermost to know more and configure the behaviour of the plugin."
+            },
+            {
+                "key": "EmailFooterLine2",
+                "display_name": "[EMAIL] Template Footer Line 2",
+                "type": "text",
+                "help_text": "The text of the second line of the footer that will appear in the emails",
+                "default": ""
+            },
+            {
+                "key": "EmailFooterLine3",
+                "display_name": "[EMAIL] Template Footer Line 3",
+                "type": "text",
+                "help_text": "The text of the third line of the footer that will appear in the emails",
+                "default": "This email is sent from the Missed Activity Notifier plugin. If you think you should have not received this message, please contact your Mattermost administrator."
+            },
+
+
+            {
+                "key": "DebugLogEnabled",
+                "display_name": "[DEBUG] Enable debug logs",
+                "type": "bool",
+                "help_text": "If true print all message logs, otherwise print only error, warning and info level messages",
+                "default": false
+            },
+            {
+                "key": "RunStatsToKeep",
+                "display_name": "[DEBUG] Keep N previous runs logs",
+                "type": "number",
+                "help_text": "For each run, the plugin keeps in memeory logs and outputs for debugging and explaination purposes. While the size of this data is very tiny, after a a given number of runs, they are deleted to free memory",
+                "default": 100
+            },
+            {
+                "key": "ResetLastNotificationTimestamp",
+                "display_name": "[DEBUG] Reset LastNotifiedTimestamp at startup",
+                "type": "bool",
+                "help_text": "Reset the last notified timestamp at startup. This is the timestamp that MAN stores at each run that indicate from what point in time the next run should start to process unread messages",
+                "default": false
+            }
+        ]
+    }
+}
