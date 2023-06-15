@@ -37,9 +37,14 @@ func (p *MANPlugin) printHistory(w http.ResponseWriter) {
 }
 
 func (p *MANPlugin) manualRun(buf http.ResponseWriter, lower time.Time, upper time.Time) {
+	lowerBound := time.UnixMilli(0)
+	if p.configuration.NotifyOnlyNewMessagesFromStartup {
+		lowerBound = p.startupTime
+	}
 	res, err := man.RunMAN(p.backend, p.userStatuses, &man.MissedActivityOptions{
+		LowerBound:            lowerBound,
 		LastNotifiedTimestamp: lower,
-		To:                    upper,
+		UpperBound:            upper,
 	})
 
 	if err != nil {

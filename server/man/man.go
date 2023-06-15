@@ -12,8 +12,9 @@ import (
 )
 
 type MissedActivityOptions struct {
+	LowerBound            time.Time
 	LastNotifiedTimestamp time.Time
-	To                    time.Time
+	UpperBound            time.Time
 }
 
 type MissedActivityNotifier struct {
@@ -68,10 +69,16 @@ func (man *MissedActivityNotifier) ProcessMessageValidForNotification(post *mode
 func (man *MissedActivityNotifier) GetChannelMissedActivity(channelMembership *model.ChannelMembership) (*model.ChannelMissedActivity, error) {
 	// 1. Get all the posts in the channel that are unread for the user
 	//  (up to the run upper bound)
+
+	lowerBound := channelMembership.LastReadPost.UnixMilli()
+	if man.options.LowerBound.UnixMilli() > lowerBound {
+		lowerBound = man.options.LowerBound.UnixMilli()
+	}
+
 	posts, err := man.backend.GetChannelPosts(
 		channelMembership.Channel.Id,
-		channelMembership.LastReadPost,
-		man.options.To)
+		lowerBound,
+		man.options.UpperBound.UnixMilli())
 
 	if err != nil {
 		return nil, errors.Wrap(err, "Error getting channel posts")
@@ -108,19 +115,11 @@ func (man *MissedActivityNotifier) GetChannelMissedActivity(channelMembership *m
 	// 3. filter conversations
 	for _, conversation := range rootPostsMap {
 		eligible := man.ProcessMessageValidForNotification(conversation.RootPost, conversation, channelMembership.User, crs)
+		hasReplies := len(conversation.Replies) > 0
+		isRootRead := !conversation.IsRootMessageUnread
 
-		// if a conversation has replies that needs to be notified, keep it
-		if eligible || len(conversation.Replies) > 0 {
+		if (eligible && !isRootRead) || hasReplies {
 			crs.UnreadConversations = append(crs.UnreadConversations, conversation)
-			continue
-		}
-
-		// if the post has been already read or is not in the notification range, remove it
-		// it can happen because Mattermost API returns also root posts that are already read
-		// or not in range if there are referenced by a reply
-		if !conversation.IsRootMessageUnread {
-			crs.AppendLog("Removing message %s because it is already read", conversation.RootPost.Message)
-			continue
 		}
 	}
 

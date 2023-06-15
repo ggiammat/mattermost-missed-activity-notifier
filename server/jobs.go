@@ -72,18 +72,24 @@ func (p *MANPlugin) CleanMANStats() {
 func (p *MANPlugin) MANJob() {
 
 	// 1. calculate the time range in which run
-	lower, errT := p.backend.GetLastNotifiedTimestamp()
+	lastNotifiedTimestamp, errT := p.backend.GetLastNotifiedTimestamp()
 	if errT != nil {
 		p.backend.LogError("error running MANJob while retrieving the last notfied timestamp: %s", errT)
 		return
+	}
+
+	lowerBound := time.UnixMilli(0)
+	if p.configuration.NotifyOnlyNewMessagesFromStartup {
+		lowerBound = p.startupTime
 	}
 
 	upper := time.Now().Add(time.Minute * (-time.Duration(p.configuration.IgnoreMessagesNewerThan)))
 
 	// 2. run MAN. This will return a list of TeamMissedActivity objects
 	res, err := man.RunMAN(p.backend, p.userStatuses, &man.MissedActivityOptions{
-		LastNotifiedTimestamp: lower,
-		To:                    upper,
+		LowerBound:            lowerBound,
+		LastNotifiedTimestamp: lastNotifiedTimestamp,
+		UpperBound:            upper,
 	})
 
 	if err != nil {
@@ -94,7 +100,7 @@ func (p *MANPlugin) MANJob() {
 	execLogs := &MANRunLog{
 		numRun:        p.manRunStats.numRuns + 1,
 		executionTime: time.Now(),
-		from:          lower,
+		from:          lastNotifiedTimestamp,
 		to:            upper,
 		textLogs:      []string{},
 		htmlEmails:    []string{},

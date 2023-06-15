@@ -7,13 +7,12 @@ import (
 )
 
 type configuration struct {
-	RunInterval                      int
-	IgnoreMessagesNewerThan          int
-	ResetLastNotificationTimestamp   bool
-	DryRun                           bool
-	NotifyOnlyNewMessagesFromStartup bool
-	KeepStatusHistoryInterval        int
-
+	RunInterval                            int
+	IgnoreMessagesNewerThan                int
+	ResetLastNotificationTimestamp         bool
+	DryRun                                 bool
+	NotifyOnlyNewMessagesFromStartup       bool
+	KeepStatusHistoryInterval              int
 	RunStatsToKeep                         int
 	EmailSubTitle                          string
 	EmailButtonText                        string

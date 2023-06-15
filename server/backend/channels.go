@@ -49,10 +49,7 @@ func (mm *MattermostBackend) GetChannel(channelID string) (*model.Channel, error
 	return res, nil
 }
 
-func (mm *MattermostBackend) GetChannelPosts(channelID string, from time.Time, to time.Time) ([]*model.Post, error) {
-	fromt := from.UnixMilli()
-	tot := to.UnixMilli()
-
+func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot int64) ([]*model.Post, error) {
 	cacheKey := fmt.Sprintf("%s_%d_%d", channelID, fromt, tot)
 
 	if x, found := mm.postsCache.Get(cacheKey); found {

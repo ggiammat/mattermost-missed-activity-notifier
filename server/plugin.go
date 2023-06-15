@@ -27,6 +27,7 @@ type MANPlugin struct {
 	configuration     *configuration
 	userStatuses      *userstatus.UserStatusTracker
 	manRunStats       *MANRunStats
+	startupTime       time.Time
 	backend           *backend.MattermostBackend
 	manJob            *cluster.Job
 }
@@ -74,6 +75,8 @@ func (p *MANPlugin) CreateMattermostBackend() error {
 
 func (p *MANPlugin) OnActivate() error {
 
+	p.startupTime = time.Now()
+
 	go func() {
 		log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
 	}()
@@ -86,13 +89,6 @@ func (p *MANPlugin) OnActivate() error {
 		errT := p.backend.SetLastNotifiedTimestamp(time.UnixMilli(0))
 		if errT != nil {
 			return errors.Wrap(errT, "error setting last notified timestamp")
-		}
-	}
-
-	if p.configuration.NotifyOnlyNewMessagesFromStartup {
-		errTT := p.backend.SetLastNotifiedTimestamp(time.Now())
-		if errTT != nil {
-			return errors.Wrap(errTT, "error setting last notified timestamp")
 		}
 	}
 

@@ -91,7 +91,7 @@ func (mm *MattermostBackend) LogError(message string, a ...any) {
 	mm.api.LogError(fmt.Sprintf(message, a...))
 }
 
-func (mm *MattermostBackend) GetHelpMessage() string {
+func (mm *MattermostBackend) GetReadmeContent() string {
 	pluginRoot, _ := mm.api.GetBundlePath()
 	content, errF := ioutil.ReadFile(filepath.Join(pluginRoot, "README.md"))
 	if errF != nil {
