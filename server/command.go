@@ -21,10 +21,10 @@ func (p *MANPlugin) registerMANCommand() error {
 	if err := p.API.RegisterCommand(&mm_model.Command{
 		Trigger:          CommandTrigger,
 		AutoComplete:     true,
-		AutoCompleteHint: "[enable|disable|help|prefs|stats]",
-		AutoCompleteDesc: "Configure Missed Activity Plugin",
+		AutoCompleteHint: "[help|prefs|stats]",
+		AutoCompleteDesc: "Configure the Missed Activity Plugin",
 	}); err != nil {
-		return errors.Wrap(err, "failed to register command")
+		return errors.Wrap(err, "failed to register the command")
 	}
 
 	return nil
@@ -135,7 +135,12 @@ func (p *MANPlugin) executeCommandImpl(userID string, command string, args []str
 	case "prefs":
 		return commandPrefs(user, args, p.backend)
 	case "help":
-		return p.backend.GetHelpMessage(), nil
+		readme := p.backend.GetReadmeContent()
+		if strings.Index(readme, "## Admin Configuration") > 0 {
+			readme = readme[:strings.Index(readme, "## Admin Configuration")]
+		}
+		helpMsg := fmt.Sprintf("%s\n\n---\n### Look at https://github.com/ggiammat/mattermost-missed-activity-notifier for additional documentation", readme)
+		return helpMsg, nil
 	case "stats":
 		return commandStats(user, args, p.backend, p.manRunStats, p.userStatuses)
 	}
