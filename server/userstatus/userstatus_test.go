@@ -68,13 +68,13 @@ func TestAllUserStatusesSet(t *testing.T) {
 	assert.Equal(t, Offline, as.usersMap["user2"].statuses[4])
 
 	// try to set a status in the past
-	err = as.setStatusAtTime("user1", "offline", time.Date(2021, time.Month(2), 21, 12, 20, 0, 0, time.UTC).UnixMilli())
-	assert.EqualError(t, err, "cannot set status for a time older than the last timestamp")
+	errB := as.setStatusAtTime("user1", "offline", time.Date(2021, time.Month(2), 21, 12, 20, 0, 0, time.UTC).UnixMilli())
+	assert.EqualError(t, errB, "cannot set status for a time older than the last timestamp")
 
 	// add a new user
-	err = as.setStatusAtTime("user3", "online", time.Date(2021, time.Month(2), 21, 13, 20, 0, 0, time.UTC).UnixMilli())
-	assert.Equal(t, 3, len(as.usersMap))
-	assert.Nil(t, err)
+	errC := as.setStatusAtTime("user4", "online", time.Date(2021, time.Month(2), 21, 13, 20, 0, 0, time.UTC).UnixMilli())
+	assert.Equal(t, 4, len(as.usersMap))
+	assert.Nil(t, errC)
 }
 
 func TestSetStatus(t *testing.T) {
