@@ -27,13 +27,10 @@ func (mm *MattermostBackend) getUsersInChannel(channelId string) ([]*model.User,
 }
 
 func (mm *MattermostBackend) SendEmailToUser(user *model.User, subject string, body string) error {
-	mm.LogError("Email sending disabled in code")
-	/*
-		err := mm.api.SendMail(user.Email, subject, body)
-		if err != nil {
-			return errors.Wrap(err, "error sending email")
-		}
-	*/
+	err := mm.api.SendMail(user.Email, subject, body)
+	if err != nil {
+		return errors.Wrap(err, "error sending email")
+	}
 	return nil
 }
 
