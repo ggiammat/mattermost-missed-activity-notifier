@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -190,6 +191,18 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 			channels = append(channels, BuildChannelData(&cma, conversationsData))
 		}
 	}
+
+	sort.Slice(channels, func(i, j int) bool {
+		backend.LogDebug("Comparison %d, %d || %s, %s", len(channels[i].Conversations), len(channels[j].Conversations), channels[i].ChannelName, channels[j].ChannelName)
+
+		diff := len(channels[i].Conversations) - len(channels[j].Conversations)
+
+		if diff != 0 {
+			return diff > 0
+		}
+
+		return channels[i].ChannelName < channels[j].ChannelName
+	})
 
 	data.Props["Channels"] = channels
 
