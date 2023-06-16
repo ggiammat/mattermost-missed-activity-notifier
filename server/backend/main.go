@@ -3,7 +3,7 @@ package backend
 import (
 	"database/sql"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -94,7 +94,7 @@ func (mm *MattermostBackend) LogError(message string, a ...any) {
 
 func (mm *MattermostBackend) GetReadmeContent() string {
 	pluginRoot, _ := mm.api.GetBundlePath()
-	content, errF := ioutil.ReadFile(filepath.Join(pluginRoot, "README.md"))
+	content, errF := os.ReadFile(filepath.Join(pluginRoot, "README.md"))
 	if errF != nil {
 		mm.LogError("Error reading README.md")
 		return "Help not available (error reading README.md file)"
