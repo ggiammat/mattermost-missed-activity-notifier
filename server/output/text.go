@@ -3,6 +3,7 @@ package output
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -23,11 +24,20 @@ func PrintUserStatuses(userStatus *userstatus.UserStatusTracker, backend *backen
 	table.SetAutoWrapText(false)
 	table.SetHeader([]string{"P", "V", "E", "A", "User", "Statuses", "Tot Emails", "Last Email"})
 
-	for _, id := range ids {
+	users := make([]*model.User, len(ids))
+	for i, id := range ids {
 		user, errU := backend.GetUser(id)
 		if errU != nil {
 			fmt.Fprintf(w, "error getting user with id %s", id)
 		}
+		users[i] = user
+	}
+
+	sort.Slice(users, func(i, j int) bool {
+		return users[i].Username < users[j].Username
+	})
+
+	for _, user := range users {
 
 		if user.IsBot {
 			continue
@@ -58,7 +68,7 @@ func PrintUserStatuses(userStatus *userstatus.UserStatusTracker, backend *backen
 			emailLast = entry[len(entry)-1].Format(time.RFC822)
 		}
 
-		timestamps, statuses := userStatus.GetUserStatusHistory(id)
+		timestamps, statuses := userStatus.GetUserStatusHistory(user.Id)
 		statusStr := make([]string, len(timestamps))
 
 		for i, t := range timestamps {
