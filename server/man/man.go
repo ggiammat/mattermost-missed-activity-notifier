@@ -131,7 +131,7 @@ func (man *MissedActivityNotifier) GetChannelMissedActivity(channelMembership *m
 	return crs, nil
 }
 
-func (man *MissedActivityNotifier) GetUserMissedActivity(team *model.Team, user *model.User) (*model.TeamMissedActivity, error) {
+func (man *MissedActivityNotifier) GetUserMissedActivity(team *model.Team, user *model.User, includeDirectMessages bool) (*model.TeamMissedActivity, error) {
 	uma := &model.TeamMissedActivity{
 		User:           user,
 		Team:           team,
@@ -140,7 +140,7 @@ func (man *MissedActivityNotifier) GetUserMissedActivity(team *model.Team, user 
 	}
 
 	// 1. get channels memeberships
-	mb, err := man.backend.GetChannelMembersForUser(team.Id, user.Id)
+	mb, err := man.backend.GetChannelMembersForUser(team.Id, user.Id, includeDirectMessages)
 	if err != nil {
 		return nil, err
 	}
@@ -187,21 +187,32 @@ func (man *MissedActivityNotifier) Run() ([]*model.TeamMissedActivity, error) {
 			return nil, errors.Wrap(err3, "Error getting team list, cannot continue")
 		}
 
-		// append a fake team to handle direct messages. Direct Messages does not belong
-		// to a particular Team, so to manage them uniformely we use this special team
-		teams = append(teams, model.DIRECT_MESSAGES_FAKE_TEAM)
-
-		for _, team := range teams {
-			man.logDebug("Computing missed activity for user %s in team %s", user.Username, team.Name)
-
-			uma, err := man.GetUserMissedActivity(team, user)
+		// only one team. We include in this team also the direct messages
+		if len(teams) == 1 {
+			uma, err := man.GetUserMissedActivity(teams[0], user, true)
 
 			if err != nil {
-				return nil, errors.Wrap(err, "Error getting user missed activity, cannot continue")
+				return nil, errors.Wrap(err, fmt.Sprintf("error getting user missed activity in team %s (including direct messages), cannot continue", teams[0].Name))
 			}
 
 			if uma != nil {
 				res = append(res, uma)
+			}
+		} else {
+			// append a fake team to handle direct messages. Direct Messages does not belong
+			// to a particular Team, so to manage them uniformely we use this special team
+			teams = append(teams, model.DIRECT_MESSAGES_FAKE_TEAM)
+
+			for _, team := range teams {
+				uma, err := man.GetUserMissedActivity(team, user, false)
+
+				if err != nil {
+					return nil, errors.Wrap(err, fmt.Sprintf("error getting user missed activity in team %s, cannot continue", teams[0].Name))
+				}
+
+				if uma != nil {
+					res = append(res, uma)
+				}
 			}
 		}
 	}

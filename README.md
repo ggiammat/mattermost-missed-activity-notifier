@@ -77,12 +77,14 @@ You can disable the plugin issuing the `/missedactivity prefs enabled false` com
 ### How do I stop receiving all emails from Mattermost?
 You can disable email notifications in the *Settings -> Email Notifications* section. This will stop not only emails from this plugin, but all emails send by Mattermost.
 
-
 ### Why did I received two notifications for the same message?
 Due to limitations in the Mattermost plugin API, this plugin cannot directly know if the Mattermost server already sent a notification for a given message. The plugin tries to simulate the Mattermost logic to understand if an email notifcation for the message could have been already sent or not. However, this mechanism is not 100% accurate and in some cases (expecially for unread messages creaetd before the plugin was started) it might result in a message notfied twice.
 
 ### Why did I not receive any notification for a given message?
 See answer to the previous FAQ.
+
+### Why did I receive multiple notification emails at the same time?
+The plugin aggregate unread messaged by team and sends one distinct email for each team you are member. This helps to make it clear to what team the messages you are reading in the email notification belongs to. Direct messages does not belong to any specific team and they are notified all toghether in a distinct email. The only exception to this rule is if you are member of just one team. In this case, you will receive a single notification email that includes both messages from the team and all the direct messages.
 
 ## Admin Configuration
 

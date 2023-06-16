@@ -92,12 +92,11 @@ func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot 
 	return res, nil
 }
 
-func (mm *MattermostBackend) GetChannelMembersForUser(teamID string, userID string) ([]*model.ChannelMembership, error) {
+func (mm *MattermostBackend) GetChannelMembersForUser(teamID string, userID string, includeDirectMessages bool) ([]*model.ChannelMembership, error) {
 	// apparently the teamId parameter is not used, so this call return the memberships
 	// of the user in ALL teams. So we remove all the results that are not in the teamId we
 	// are looking for.
 	// ref: https://github.com/mattermost/mattermost-server/blob/0cb3a406da7a339cc47bb72e32106b24e13c2a9a/server/channels/app/plugin_api.go#L593
-
 	// TODO: handle pagination
 	memberships, err := mm.api.GetChannelMembersForUser(teamID, userID, 0, 1000)
 
@@ -115,21 +114,19 @@ func (mm *MattermostBackend) GetChannelMembersForUser(teamID string, userID stri
 
 		// the api call GetChannelMembersForUser returns all memberships in ALL teams
 		// so we remove the ones in other teams
-		if ch.TeamId != teamID {
-			continue
-		}
+		if ch.TeamId == teamID || (includeDirectMessages && ch.TeamId == "") {
+			usr, err := mm.GetUser(mb.UserId)
+			if err != nil {
+				return nil, fmt.Errorf("error getting user while getting channel memberships: %s", err)
+			}
 
-		usr, err := mm.GetUser(mb.UserId)
-		if err != nil {
-			return nil, fmt.Errorf("error getting user while getting channel memberships: %s", err)
+			res = append(res, &model.ChannelMembership{
+				Channel:      ch,
+				User:         usr,
+				LastReadPost: time.UnixMilli(mb.LastViewedAt),
+				NotifyProps:  mb.NotifyProps,
+			})
 		}
-
-		res = append(res, &model.ChannelMembership{
-			Channel:      ch,
-			User:         usr,
-			LastReadPost: time.UnixMilli(mb.LastViewedAt),
-			NotifyProps:  mb.NotifyProps,
-		})
 	}
 
 	return res, nil
