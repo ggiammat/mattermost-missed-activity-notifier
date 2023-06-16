@@ -7,10 +7,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 	mm_model "github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin"
 	"github.com/patrickmn/go-cache"
+
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 )
 
 type MattermostBackend struct {
@@ -39,7 +40,7 @@ type MattermostBackend struct {
 
 func CreateTeam(mmTeam *mm_model.Team) *model.Team {
 	return &model.Team{
-		Id:   mmTeam.Id,
+		ID:   mmTeam.Id,
 		Name: mmTeam.DisplayName,
 	}
 }

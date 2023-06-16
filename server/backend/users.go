@@ -3,28 +3,12 @@ package backend
 import (
 	"fmt"
 
-	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 	mm_model "github.com/mattermost/mattermost-server/v6/model"
 	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
+
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 )
-
-func (mm *MattermostBackend) getUsersInChannel(channelId string) ([]*model.User, error) {
-
-	// TODO: handle pagination
-	users, err := mm.api.GetUsersInChannel(channelId, "username", 0, 1000)
-
-	if err != nil {
-		return nil, fmt.Errorf("error getting users in channel (channelId=%s): %s", channelId, err)
-	} else {
-		members := []*model.User{}
-		for k := 0; k < len(users); k++ {
-			u, _ := mm.GetUser(users[k].Id)
-			members = append(members, u)
-		}
-		return members, nil
-	}
-}
 
 func (mm *MattermostBackend) SendEmailToUser(user *model.User, subject string, body string) error {
 	err := mm.api.SendMail(user.Email, subject, body)
@@ -168,9 +152,8 @@ func (mm *MattermostBackend) loadUsers(userID string) ([]*model.User, error) {
 
 	var res []*model.User
 	for _, u := range mmUsers {
-
 		newU := &model.User{
-			Id:            u.Id,
+			ID:            u.Id,
 			Username:      u.Username,
 			Email:         u.Email,
 			FirstName:     u.FirstName,
@@ -184,7 +167,7 @@ func (mm *MattermostBackend) loadUsers(userID string) ([]*model.User, error) {
 		}
 
 		// add profile image
-		profileImage, errI := mm.api.GetProfileImage(newU.Id)
+		profileImage, errI := mm.api.GetProfileImage(newU.ID)
 		if errI != nil {
 			mm.LogError("Error getting profile image for user %s: %s", newU.Username, errI)
 		} else {
@@ -192,10 +175,10 @@ func (mm *MattermostBackend) loadUsers(userID string) ([]*model.User, error) {
 		}
 
 		// load MAN preferences
-		newU.MANPreferences = mm.GetPreferencesForUser(newU.Id)
+		newU.MANPreferences = mm.GetPreferencesForUser(newU.ID)
 
 		// add object to cache
-		mm.usersCache.Set(newU.Id, newU, cache.DefaultExpiration)
+		mm.usersCache.Set(newU.ID, newU, cache.DefaultExpiration)
 
 		res = append(res, newU)
 	}

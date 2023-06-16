@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mattermost/mattermost-plugin-api/cluster"
+	"github.com/pkg/errors"
+
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/man"
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/output"
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/userstatus"
-	"github.com/mattermost/mattermost-plugin-api/cluster"
-	"github.com/pkg/errors"
 )
 
 func (p *MANPlugin) deactivateMANJob() error {
@@ -17,13 +18,11 @@ func (p *MANPlugin) deactivateMANJob() error {
 			return errors.Wrap(err, "Error deactivating job")
 		}
 		p.backend.LogDebug("MAN Job deactivated")
-
 	}
 	return nil
 }
 
 func (p *MANPlugin) activateMANJob() error {
-
 	p.backend.LogDebug("Activating MAN Job")
 
 	lastNotifiedTime, errA := p.backend.GetLastNotifiedTimestamp()
@@ -54,7 +53,6 @@ func (p *MANPlugin) activateMANJob() error {
 }
 
 func (p *MANPlugin) CleanMANStats() {
-
 	length := len(p.manRunStats.runLogs)
 	if length > p.configuration.RunStatsToKeep {
 		p.manRunStats.runLogs = p.manRunStats.runLogs[length-p.configuration.RunStatsToKeep:]
@@ -70,7 +68,6 @@ func (p *MANPlugin) CleanMANStats() {
 }
 
 func (p *MANPlugin) MANJob() {
-
 	// 1. calculate the time range in which run
 	lastNotifiedTimestamp, errT := p.backend.GetLastNotifiedTimestamp()
 	if errT != nil {
@@ -112,7 +109,6 @@ func (p *MANPlugin) MANJob() {
 	//    - send the email
 
 	for _, r := range res {
-
 		// record text logs
 		out := output.PrintTeamMissedActivity(p.backend, r)
 		execLogs.textLogs = append(execLogs.textLogs, out)
@@ -132,13 +128,12 @@ func (p *MANPlugin) MANJob() {
 		}
 
 		if email != "" {
-
 			// record email logs
 			execLogs.htmlEmails = append(execLogs.htmlEmails, fmt.Sprintf("To: %s Subject: %s Body: <br>%s", r.User.Email, subject, email))
-			if entry, ok := p.manRunStats.sentEmailStats[r.User.Id]; ok {
-				p.manRunStats.sentEmailStats[r.User.Id] = append(entry, time.Now())
+			if entry, ok := p.manRunStats.sentEmailStats[r.User.ID]; ok {
+				p.manRunStats.sentEmailStats[r.User.ID] = append(entry, time.Now())
 			} else {
-				p.manRunStats.sentEmailStats[r.User.Id] = []time.Time{time.Now()}
+				p.manRunStats.sentEmailStats[r.User.ID] = []time.Time{time.Now()}
 			}
 
 			// send email
@@ -161,11 +156,13 @@ func (p *MANPlugin) MANJob() {
 	p.manRunStats.numRuns++
 
 	// 5. record the last notified timestamp in the db
-	p.backend.SetLastNotifiedTimestamp(upper)
+	errST := p.backend.SetLastNotifiedTimestamp(upper)
+	if errST != nil {
+		p.backend.LogError("Error setting lastNotifiedTimestamp: %s", errST)
+	}
 
 	// 6. housekeeping
 	p.CleanMANStats()
 	// remove statuses older than the last run because we will not need them
 	userstatus.ClearStatusesOlderThan(p.userStatuses, time.Now().Add(time.Hour*(-time.Duration(p.configuration.KeepStatusHistoryInterval))))
-
 }

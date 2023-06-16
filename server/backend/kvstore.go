@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 	"github.com/pkg/errors"
+
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 )
 
 type MANKVStore struct {
@@ -47,13 +48,13 @@ func (mm *MattermostBackend) ResetPreferenceEnabled(user *model.User) error {
 		return errors.Wrap(err, "Error getting kvStore to set user preference")
 	}
 
-	delete(pref.UserPreferences, user.Id)
+	delete(pref.UserPreferences, user.ID)
 
 	errS := mm.saveKV()
 	if errS != nil {
 		return errors.Wrap(errS, "error saving kvstore")
 	}
-	mm.usersCache.Delete(user.Id)
+	mm.usersCache.Delete(user.ID)
 
 	return nil
 }
@@ -67,10 +68,10 @@ func (mm *MattermostBackend) GetPreferencesForUser(userID string) model.MANUserP
 
 	if entry, ok := prefs.UserPreferences[userID]; ok {
 		return entry
-	} else {
-		defaultCopy := *mm.defaultUserPrefs
-		return defaultCopy
 	}
+
+	defaultCopy := *mm.defaultUserPrefs
+	return defaultCopy
 }
 
 func (mm *MattermostBackend) SetPreferencesForUser(userID string, prefs model.MANUserPreferences) error {
@@ -90,11 +91,11 @@ func (mm *MattermostBackend) SetPreferencesForUser(userID string, prefs model.MA
 }
 
 func (mm *MattermostBackend) SetPreferenceNotifyRepliesNotFollowed(user *model.User, enabled bool) error {
-	prefs := mm.GetPreferencesForUser(user.Id)
+	prefs := mm.GetPreferencesForUser(user.ID)
 
 	if prefs.NotifyRepliesInNotFollowedThreads != enabled {
 		prefs.NotifyRepliesInNotFollowedThreads = enabled
-		err := mm.SetPreferencesForUser(user.Id, prefs)
+		err := mm.SetPreferencesForUser(user.ID, prefs)
 		if err != nil {
 			return errors.Wrap(err, "error setting preferences for user")
 		}
@@ -104,11 +105,11 @@ func (mm *MattermostBackend) SetPreferenceNotifyRepliesNotFollowed(user *model.U
 }
 
 func (mm *MattermostBackend) SetPrefCountPreviouslyNotified(user *model.User, enabled bool) error {
-	prefs := mm.GetPreferencesForUser(user.Id)
+	prefs := mm.GetPreferencesForUser(user.ID)
 
 	if prefs.IncludeCountPreviouslyNotified != enabled {
 		prefs.IncludeCountPreviouslyNotified = enabled
-		err := mm.SetPreferencesForUser(user.Id, prefs)
+		err := mm.SetPreferencesForUser(user.ID, prefs)
 		if err != nil {
 			return errors.Wrap(err, "error setting preferences for user")
 		}
@@ -118,11 +119,11 @@ func (mm *MattermostBackend) SetPrefCountPreviouslyNotified(user *model.User, en
 }
 
 func (mm *MattermostBackend) SetPreferenceCountNotifiedByMM(user *model.User, enabled bool) error {
-	prefs := mm.GetPreferencesForUser(user.Id)
+	prefs := mm.GetPreferencesForUser(user.ID)
 
 	if prefs.InlcudeCountOfMessagesNotifiedByMM != enabled {
 		prefs.InlcudeCountOfMessagesNotifiedByMM = enabled
-		err := mm.SetPreferencesForUser(user.Id, prefs)
+		err := mm.SetPreferencesForUser(user.ID, prefs)
 		if err != nil {
 			return errors.Wrap(err, "error setting preferences for user")
 		}
@@ -132,11 +133,11 @@ func (mm *MattermostBackend) SetPreferenceCountNotifiedByMM(user *model.User, en
 }
 
 func (mm *MattermostBackend) SetPreferenceCountRepliesNotFollowed(user *model.User, enabled bool) error {
-	prefs := mm.GetPreferencesForUser(user.Id)
+	prefs := mm.GetPreferencesForUser(user.ID)
 
 	if prefs.IncludeCountOfRepliesInNotFollowedThreads != enabled {
 		prefs.IncludeCountOfRepliesInNotFollowedThreads = enabled
-		err := mm.SetPreferencesForUser(user.Id, prefs)
+		err := mm.SetPreferencesForUser(user.ID, prefs)
 		if err != nil {
 			return errors.Wrap(err, "error setting preferences for user")
 		}
@@ -146,10 +147,10 @@ func (mm *MattermostBackend) SetPreferenceCountRepliesNotFollowed(user *model.Us
 }
 
 func (mm *MattermostBackend) SetPreferenceEnabled(user *model.User, enabled bool) error {
-	prefs := mm.GetPreferencesForUser(user.Id)
+	prefs := mm.GetPreferencesForUser(user.ID)
 	if prefs.Enabled != enabled {
 		prefs.Enabled = enabled
-		err := mm.SetPreferencesForUser(user.Id, prefs)
+		err := mm.SetPreferencesForUser(user.ID, prefs)
 		if err != nil {
 			return errors.Wrap(err, "error setting preferences for user")
 		}

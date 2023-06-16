@@ -27,43 +27,28 @@ func (uma *TeamMissedActivity) AppendLog(message string, a ...any) {
 
 // posts coming from the db
 type Post struct {
-	Id        string
+	ID        string
 	Message   string
-	AuthorId  string
+	AuthorID  string
 	CreatedAt time.Time
-	RootId    string
+	RootID    string
 	Type      string
 }
 
 func (p *Post) IsRoot() bool {
-	return p.RootId == ""
+	return p.RootID == ""
 }
-
-/*
-type UnreadReply struct {
-	Message string
-	Auhtor  *User
-	Type    string
-	Time    time.Time
-}
-*/
 
 type UnreadConversation struct {
-	//Message             string
-	//Auhtor              *User
-	//Type                string
-	//Time                time.Time
-	Following bool
-	//HasMentions         bool
+	Following           bool
 	IsRootMessageUnread bool
-	//ContainsMentions    bool
-	RootPost          *Post
-	Replies           []*Post
-	MostRecentMessage time.Time
+	RootPost            *Post
+	Replies             []*Post
+	MostRecentMessage   time.Time
 }
 
-func (up *UnreadConversation) IsAuthor(user *User) bool {
-	return user.Id == up.RootPost.AuthorId
+func (uc *UnreadConversation) IsAuthor(user *User) bool {
+	return user.ID == uc.RootPost.AuthorID
 }
 
 func NewUnreadConversation(rootPost *Post, following bool, rootPostUnread bool) *UnreadConversation {
@@ -84,7 +69,7 @@ func (uc *UnreadConversation) AppendReply(post *Post) {
 }
 
 type User struct {
-	Id             string
+	ID             string
 	Username       string
 	FirstName      string
 	LastName       string
@@ -109,7 +94,6 @@ func (u *User) IsAdmin() bool {
 }
 
 func (u *User) DisplayName() string {
-
 	if u.FirstName != "" || u.LastName != "" {
 		return fmt.Sprintf("%s %s", u.FirstName, u.LastName)
 	}
@@ -118,26 +102,26 @@ func (u *User) DisplayName() string {
 }
 
 type Team struct {
-	Id   string
+	ID   string
 	Name string
 }
 
 var (
 	// fake team to handle direct messages. Direct Messages does not belong
 	// to a particular Team, so to manage them uniformely we use this special team
-	DIRECT_MESSAGES_FAKE_TEAM = &Team{Name: "Direct Messages", Id: ""}
+	DirectMessagesFakeTeam = &Team{Name: "Direct Messages", ID: ""}
 )
 
 type Channel struct {
-	Id          string
+	ID          string
 	DisplayName string
 	Members     []string
 	Type        string
-	TeamId      string
+	TeamID      string
 }
 
-func (c *Channel) IsDirect() bool {
-	return c.Type == "D"
+func (ch *Channel) IsDirect() bool {
+	return ch.Type == "D"
 }
 
 type ChannelMissedActivity struct {
@@ -199,5 +183,4 @@ func (ch *Channel) GetChannelName(user *User) string {
 	}
 
 	return "INVALID NAME"
-
 }

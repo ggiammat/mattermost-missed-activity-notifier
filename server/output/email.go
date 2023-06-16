@@ -11,9 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
-	"github.com/pkg/errors"
 )
 
 type EmailTemplateProps struct {
@@ -54,7 +55,7 @@ type channelData struct {
 	NumPreviouslyNotified          int
 }
 
-func BuildChannelData(cma *model.ChannelMissedActivity, conversationsData []*conversationData) *channelData {
+func buildChannelData(cma *model.ChannelMissedActivity, conversationsData []*conversationData) *channelData {
 	return &channelData{
 		ChannelName:                    cma.GetChannelName(),
 		ShowChannelIcon:                true,
@@ -71,6 +72,7 @@ type templateData struct {
 }
 
 func formatMessage(message string) template.HTML {
+	//nolint:gocritic,gosec
 	return template.HTML(strings.Replace(template.HTMLEscapeString(message), "\n", "<br>", -1))
 }
 
@@ -94,7 +96,7 @@ func toBase64(bytes []byte) template.URL {
 
 	// Append the base64 encoded output
 	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
-
+	//nolint:gosec
 	return template.URL(base64Encoding)
 }
 
@@ -106,18 +108,19 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 	buildMessageLink := func(post *model.Post) template.URL {
 		teamName := missedActivity.Team.Name
 
-		if missedActivity.Team.Id == "" {
+		if missedActivity.Team.ID == "" {
 			// although direct messages don't belong to any team, we have to specify a team name in the
 			// url. We choose the first team the user belongs to
-			teams, _ := backend.GetTeamsForUser(missedActivity.User.Id)
+			teams, _ := backend.GetTeamsForUser(missedActivity.User.ID)
 			if len(teams) < 1 {
-				backend.LogError("Cannot build a link for direct message %s: user is not member of any team", post.Id)
+				backend.LogError("Cannot build a link for direct message %s: user is not member of any team", post.ID)
+				//nolint:gosec
 				return template.URL(serverURL)
 			}
 			teamName = teams[0].Name
 		}
-
-		return template.URL(fmt.Sprintf("%s/%s/pl/%s", serverURL, strings.ToLower(teamName), post.Id))
+		//nolint:gosec
+		return template.URL(fmt.Sprintf("%s/%s/pl/%s", serverURL, strings.ToLower(teamName), post.ID))
 	}
 
 	t, err := template.ParseFiles(filepath.Join(backend.GetTemplatesPath(), "email-content.html"))
@@ -126,7 +129,7 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 	}
 
 	title := fmt.Sprintf("Missed Activity in the %s team", missedActivity.Team.Name)
-	if missedActivity.Team == model.DIRECT_MESSAGES_FAKE_TEAM {
+	if missedActivity.Team == model.DirectMessagesFakeTeam {
 		title = fmt.Sprintf("Missed Direct Messages in %s", serverName)
 	}
 
@@ -151,7 +154,7 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 		conversationsData := []*conversationData{}
 
 		for _, conv := range cma.UnreadConversations {
-			author, _ := backend.GetUser(conv.RootPost.AuthorId)
+			author, _ := backend.GetUser(conv.RootPost.AuthorID)
 
 			p := postData{
 				SenderName:  author.DisplayName(),
@@ -167,7 +170,7 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 			replies := []postData{}
 
 			for _, rep := range conv.Replies {
-				author, _ := backend.GetUser(rep.AuthorId)
+				author, _ := backend.GetUser(rep.AuthorID)
 
 				p := postData{
 					SenderName:  author.DisplayName(),
@@ -188,7 +191,8 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 
 		// only add a channel if there is something to notify, otherwise an empty header will appear in the email
 		if len(conversationsData) > 0 || cma.RepliesInNotFollowingConvs > 0 || cma.NotifiedByMMMessages > 0 || cma.PreviouslyNotified > 0 {
-			channels = append(channels, BuildChannelData(&cma, conversationsData))
+			//nolint:gosec
+			channels = append(channels, buildChannelData(&cma, conversationsData))
 		}
 	}
 
@@ -215,7 +219,7 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 		}
 
 		var subject string
-		if missedActivity.Team.Id != "" {
+		if missedActivity.Team.ID != "" {
 			subject = fmt.Sprintf("[%s] Recent activity in %s", serverName, missedActivity.Team.Name)
 		} else {
 			subject = fmt.Sprintf("[%s] Unread direct messages", serverName)

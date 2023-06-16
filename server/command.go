@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"strings"
 
+	mm_model "github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost-server/v6/plugin"
+	"github.com/pkg/errors"
+
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/output"
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/userstatus"
-	mm_model "github.com/mattermost/mattermost-server/v6/model"
-
-	"github.com/mattermost/mattermost-server/v6/plugin"
-	"github.com/pkg/errors"
 )
 
 const CommandTrigger = "missedactivity"
@@ -30,7 +30,7 @@ func (p *MANPlugin) registerMANCommand() error {
 	return nil
 }
 
-func commandStats(user *model.User, args []string, backend *backend.MattermostBackend, manRunStats *MANRunStats, userstatus *userstatus.UserStatusTracker) (string, error) {
+func commandStats(user *model.User, _ []string, backend *backend.MattermostBackend, manRunStats *MANRunStats, userstatus *userstatus.UserStatusTracker) (string, error) {
 	if !user.IsAdmin() {
 		return "Only administrators can see stats", nil
 	}
@@ -49,11 +49,9 @@ func commandStats(user *model.User, args []string, backend *backend.MattermostBa
 	}
 
 	return fmt.Sprintf("# Users Report\n```%s```\n# Run Logs\n%s", out, buf.String()), nil
-
 }
 
 func commandPrefs(user *model.User, args []string, backend *backend.MattermostBackend) (string, error) {
-
 	if len(args) == 1 {
 		switch args[0] {
 		case "show":
@@ -65,7 +63,10 @@ func commandPrefs(user *model.User, args []string, backend *backend.MattermostBa
 				user.MANPreferences.IncludeCountPreviouslyNotified)
 			return out, nil
 		case "reset":
-			backend.ResetPreferenceEnabled(user)
+			err := backend.ResetPreferenceEnabled(user)
+			if err != nil {
+				return "", err
+			}
 			return "plugin reset", nil
 		}
 	}
@@ -74,47 +75,77 @@ func commandPrefs(user *model.User, args []string, backend *backend.MattermostBa
 		switch args[0] {
 		case "enabled":
 			if args[1] == "true" {
-				backend.SetPreferenceEnabled(user, true)
+				err := backend.SetPreferenceEnabled(user, true)
+				if err != nil {
+					return "", err
+				}
 				return "plugin enabled", nil
 			}
 			if args[1] == "false" {
-				backend.SetPreferenceEnabled(user, false)
+				err := backend.SetPreferenceEnabled(user, false)
+				if err != nil {
+					return "", err
+				}
 				return "plugin disabled", nil
 			}
 		case "notify-replies-not-followed":
 			if args[1] == "true" {
-				backend.SetPreferenceNotifyRepliesNotFollowed(user, true)
+				err := backend.SetPreferenceNotifyRepliesNotFollowed(user, true)
+				if err != nil {
+					return "", err
+				}
 				return "notify-replies-not-followed enabled", nil
 			}
 			if args[1] == "false" {
-				backend.SetPreferenceNotifyRepliesNotFollowed(user, false)
+				err := backend.SetPreferenceNotifyRepliesNotFollowed(user, false)
+				if err != nil {
+					return "", err
+				}
 				return "notify-replies-not-followed disabled", nil
 			}
 		case "count-replies-not-followed":
 			if args[1] == "true" {
-				backend.SetPreferenceCountRepliesNotFollowed(user, true)
+				err := backend.SetPreferenceCountRepliesNotFollowed(user, true)
+				if err != nil {
+					return "", err
+				}
 				return "count-replies-not-followed enabled", nil
 			}
 			if args[1] == "false" {
-				backend.SetPreferenceCountRepliesNotFollowed(user, false)
+				err := backend.SetPreferenceCountRepliesNotFollowed(user, false)
+				if err != nil {
+					return "", err
+				}
 				return "count-replies-not-followed disabled", nil
 			}
 		case "count-notified-by-mm":
 			if args[1] == "true" {
-				backend.SetPreferenceCountNotifiedByMM(user, true)
+				err := backend.SetPreferenceCountNotifiedByMM(user, true)
+				if err != nil {
+					return "", err
+				}
 				return "count-notified-by-mm enabled", nil
 			}
 			if args[1] == "false" {
-				backend.SetPreferenceCountNotifiedByMM(user, false)
+				err := backend.SetPreferenceCountNotifiedByMM(user, false)
+				if err != nil {
+					return "", err
+				}
 				return "count-notified-by-mm disabled", nil
 			}
 		case "count-previous-notified":
 			if args[1] == "true" {
-				backend.SetPrefCountPreviouslyNotified(user, true)
+				err := backend.SetPrefCountPreviouslyNotified(user, true)
+				if err != nil {
+					return "", err
+				}
 				return "count-previous-notified enabled", nil
 			}
 			if args[1] == "false" {
-				backend.SetPrefCountPreviouslyNotified(user, false)
+				err := backend.SetPrefCountPreviouslyNotified(user, false)
+				if err != nil {
+					return "", err
+				}
 				return "count-previous-notified disabled", nil
 			}
 		}
@@ -124,7 +155,6 @@ func commandPrefs(user *model.User, args []string, backend *backend.MattermostBa
 }
 
 func (p *MANPlugin) executeCommandImpl(userID string, command string, args []string) (string, error) {
-
 	user, uErr := p.backend.GetUser(userID)
 
 	if uErr != nil {
@@ -137,6 +167,7 @@ func (p *MANPlugin) executeCommandImpl(userID string, command string, args []str
 	case "help":
 		readme := p.backend.GetReadmeContent()
 		if strings.Index(readme, "## Admin Configuration") > 0 {
+			//nolint:gocritic
 			readme = readme[:strings.Index(readme, "## Admin Configuration")]
 		}
 		helpMsg := fmt.Sprintf("%s\n\n---\n### Look at https://github.com/ggiammat/mattermost-missed-activity-notifier for additional documentation", readme)
@@ -145,12 +176,10 @@ func (p *MANPlugin) executeCommandImpl(userID string, command string, args []str
 		return commandStats(user, args, p.backend, p.manRunStats, p.userStatuses)
 	}
 	return "Specify a command: 'status', 'enable', 'disable'", nil
-
 }
 
 // Mattermost Hook
-func (p *MANPlugin) ExecuteCommand(c *plugin.Context, args *mm_model.CommandArgs) (*mm_model.CommandResponse, *mm_model.AppError) {
-
+func (p *MANPlugin) ExecuteCommand(_ *plugin.Context, args *mm_model.CommandArgs) (*mm_model.CommandResponse, *mm_model.AppError) {
 	user, uErr := p.backend.GetUser(args.UserId)
 
 	if uErr != nil {
@@ -163,11 +192,11 @@ func (p *MANPlugin) ExecuteCommand(c *plugin.Context, args *mm_model.CommandArgs
 		return &mm_model.CommandResponse{Text: "Command not specified"}, nil
 	}
 
-	res, err := p.executeCommandImpl(user.Id, tokens[1], tokens[2:])
+	res, err := p.executeCommandImpl(user.ID, tokens[1], tokens[2:])
 
 	if err != nil {
 		return &mm_model.CommandResponse{Text: res}, mm_model.NewAppError("MANAppError", "command error", nil, "error executing command", 1).Wrap(err)
-	} else {
-		return &mm_model.CommandResponse{Text: res}, nil
 	}
+
+	return &mm_model.CommandResponse{Text: res}, nil
 }

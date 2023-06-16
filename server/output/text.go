@@ -8,11 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mergestat/timediff"
+	"github.com/olekukonko/tablewriter"
+
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/userstatus"
-	"github.com/mergestat/timediff"
-	"github.com/olekukonko/tablewriter"
 )
 
 func PrintUserStatuses(userStatus *userstatus.UserStatusTracker, backend *backend.MattermostBackend, sentEmailsStats map[string][]time.Time) string {
@@ -38,7 +39,6 @@ func PrintUserStatuses(userStatus *userstatus.UserStatusTracker, backend *backen
 	})
 
 	for _, user := range users {
-
 		if user.IsBot {
 			continue
 		}
@@ -63,12 +63,12 @@ func PrintUserStatuses(userStatus *userstatus.UserStatusTracker, backend *backen
 		emailTot := ""
 		emailLast := ""
 
-		if entry, ok := sentEmailsStats[user.Id]; ok {
+		if entry, ok := sentEmailsStats[user.ID]; ok {
 			emailTot = strconv.Itoa(len(entry))
 			emailLast = entry[len(entry)-1].Format(time.RFC822)
 		}
 
-		timestamps, statuses := userStatus.GetUserStatusHistory(user.Id)
+		timestamps, statuses := userStatus.GetUserStatusHistory(user.ID)
 		statusStr := make([]string, len(timestamps))
 
 		for i, t := range timestamps {
@@ -97,7 +97,7 @@ func PrintTeamMissedActivity(backend *backend.MattermostBackend, missedActivity 
 
 		for j := 0; j < len(crs.UnreadConversations); j++ {
 			up := crs.UnreadConversations[j]
-			author, _ := backend.GetUser(up.RootPost.AuthorId)
+			author, _ := backend.GetUser(up.RootPost.AuthorID)
 
 			str5 := timediff.TimeDiff(up.RootPost.CreatedAt)
 			followingIcon := ""
@@ -123,7 +123,7 @@ func PrintTeamMissedActivity(backend *backend.MattermostBackend, missedActivity 
 			if len(up.Replies) > 0 {
 				for _, r := range up.Replies {
 					fmt.Fprintf(w, "┊  |   > %s [at: %d]\n", r.Message, r.CreatedAt.UnixMilli())
-					author, _ := backend.GetUser(r.AuthorId)
+					author, _ := backend.GetUser(r.AuthorID)
 					conversationText = fmt.Sprintf("%s<br/>  > <strong>%s</strong> replied: %s", conversationText, author.Username, r.Message)
 				}
 			}

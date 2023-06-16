@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 	"github.com/patrickmn/go-cache"
+
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 )
 
 func (mm *MattermostBackend) GetChannel(channelID string) (*model.Channel, error) {
@@ -22,10 +23,10 @@ func (mm *MattermostBackend) GetChannel(channelID string) (*model.Channel, error
 	}
 
 	res := &model.Channel{
-		Id:          channel.Id,
+		ID:          channel.Id,
 		DisplayName: channel.DisplayName,
 		Type:        string(channel.Type),
-		TeamId:      channel.TeamId,
+		TeamID:      channel.TeamId,
 	}
 
 	// Direct and group channels do not have a name, so we get the members to build
@@ -77,12 +78,12 @@ func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot 
 		// elements  come from the API ordered from the newer to the older,
 		// we sort elements in the reverse order... from the older to the newest
 		newpost := &model.Post{
-			Id:        post.Id,
+			ID:        post.Id,
 			Type:      post.Type,
 			Message:   post.Message,
-			AuthorId:  post.UserId,
+			AuthorID:  post.UserId,
 			CreatedAt: time.UnixMilli(post.CreateAt),
-			RootId:    post.RootId,
+			RootID:    post.RootId,
 		}
 		res = append([]*model.Post{newpost}, res...)
 	}
@@ -114,7 +115,7 @@ func (mm *MattermostBackend) GetChannelMembersForUser(teamID string, userID stri
 
 		// the api call GetChannelMembersForUser returns all memberships in ALL teams
 		// so we remove the ones in other teams
-		if ch.TeamId == teamID || (includeDirectMessages && ch.TeamId == "") {
+		if ch.TeamID == teamID || (includeDirectMessages && ch.TeamID == "") {
 			usr, err := mm.GetUser(mb.UserId)
 			if err != nil {
 				return nil, fmt.Errorf("error getting user while getting channel memberships: %s", err)

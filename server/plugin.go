@@ -6,19 +6,21 @@ import (
 	"log"
 	"math"
 	"net/http"
+
+	//nolint:gosec
+	_ "net/http/pprof"
 	"sync"
 	"time"
 
-	_ "net/http/pprof"
-
-	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
-	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
-	"github.com/ggiammat/mattermost-missed-activity-notifier/server/userstatus"
 	"github.com/mattermost/mattermost-plugin-api/cluster"
 	mm_model "github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin"
 	"github.com/mattermost/mattermost-server/v6/shared/driver"
 	"github.com/pkg/errors"
+
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/userstatus"
 )
 
 type MANPlugin struct {
@@ -48,7 +50,6 @@ type MANRunStats struct {
 }
 
 func (p *MANPlugin) CreateMattermostBackend() error {
-
 	cacheExpiryTime := math.Max(float64(p.configuration.RunInterval)/2, 0)
 
 	defaultUserPref := &model.MANUserPreferences{
@@ -74,10 +75,10 @@ func (p *MANPlugin) CreateMattermostBackend() error {
 }
 
 func (p *MANPlugin) OnActivate() error {
-
 	p.startupTime = time.Now()
 
 	go func() {
+		//nolint:gosec
 		log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
 	}()
 
@@ -112,7 +113,6 @@ func (p *MANPlugin) OnActivate() error {
 }
 
 func (p *MANPlugin) OnDeactivate() error {
-
 	err := p.deactivateMANJob()
 	if err != nil {
 		return errors.Wrap(err, "Error deactivagin plugin")

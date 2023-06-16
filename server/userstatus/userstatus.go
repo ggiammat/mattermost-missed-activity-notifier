@@ -16,11 +16,13 @@ const (
 	Unknown
 )
 
+//nolint:revive
 type UserStatusHistory struct {
 	statuses   []UserStatus
 	timestamps []int64
 }
 
+//nolint:revive
 type UserStatusTracker struct {
 	usersMap map[string]*UserStatusHistory
 }
@@ -36,40 +38,40 @@ func (u *UserStatusTracker) GetTrackerUserIds() []string {
 	return keys
 }
 
-func (u *UserStatusTracker) GetUserStatusHistory(userId string) ([]int64, []UserStatus) {
-	return u.usersMap[userId].timestamps, u.usersMap[userId].statuses
+func (u *UserStatusTracker) GetUserStatusHistory(userID string) ([]int64, []UserStatus) {
+	return u.usersMap[userID].timestamps, u.usersMap[userID].statuses
 }
 
 func NewUserStatusesTracker() *UserStatusTracker {
 	return &UserStatusTracker{usersMap: map[string]*UserStatusHistory{}}
 }
 
-func (a UserStatusTracker) cleanOlderThan(time time.Time) {
-	for _, v := range a.usersMap {
+func (u UserStatusTracker) cleanOlderThan(time time.Time) {
+	for _, v := range u.usersMap {
 		v.clearHistoyOlderThan(time)
 	}
 }
 
-func (a UserStatusTracker) setStatusAtTime(userId string, status string, timestamp int64) error {
+func (u UserStatusTracker) setStatusAtTime(userID string, status string, timestamp int64) error {
 	encS := encodeStatus(status)
-	if entry, ok := a.usersMap[userId]; ok {
+
+	if entry, ok := u.usersMap[userID]; ok {
 		err := entry.SetStatusAt(encS, timestamp)
-		a.usersMap[userId] = entry
-		return err
-	} else {
-		entry := &UserStatusHistory{}
-		err := entry.SetStatusAt(encS, timestamp)
-		a.usersMap[userId] = entry
+		u.usersMap[userID] = entry
 		return err
 	}
+
+	entry := &UserStatusHistory{}
+	err := entry.SetStatusAt(encS, timestamp)
+	u.usersMap[userID] = entry
+	return err
 }
 
-func (a UserStatusTracker) GetStatusForUserAtTime(userId string, time time.Time) UserStatus {
-	if entry, ok := a.usersMap[userId]; ok {
+func (u UserStatusTracker) GetStatusForUserAtTime(userID string, time time.Time) UserStatus {
+	if entry, ok := u.usersMap[userID]; ok {
 		return entry.getStatusAt(time)
-	} else {
-		return Unknown
 	}
+	return Unknown
 }
 
 func encodeStatus(status string) UserStatus {
@@ -106,7 +108,6 @@ func (s *UserStatusHistory) SetStatusAt(newStatus UserStatus, timestamp int64) e
 }
 
 func (s *UserStatusHistory) getStatusAt(time time.Time) UserStatus {
-
 	t := time.UnixMilli()
 	i := 0
 
@@ -119,12 +120,6 @@ func (s *UserStatusHistory) getStatusAt(time time.Time) UserStatus {
 	}
 
 	return s.statuses[i-1]
-}
-
-func (s *UserStatusHistory) clearHistory() {
-	i := len(s.statuses) - 1
-	s.statuses = s.statuses[i:]
-	s.timestamps = s.timestamps[i:]
 }
 
 func (s *UserStatusHistory) clearHistoyOlderThan(time time.Time) {
@@ -140,7 +135,7 @@ func (s *UserStatusHistory) clearHistoyOlderThan(time time.Time) {
 	}
 
 	// if all entries are older than time, keep the last one
-	// beacuse it is the current status
+	// because it is the current status
 	if i >= len(s.timestamps) {
 		i = len(s.timestamps) - 1
 	}

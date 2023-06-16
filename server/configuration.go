@@ -73,7 +73,6 @@ func (p *MANPlugin) setConfiguration(configuration *configuration) {
 	}
 
 	p.configuration = configuration
-
 }
 
 // OnConfigurationChange is invoked when configuration changes may have been made.

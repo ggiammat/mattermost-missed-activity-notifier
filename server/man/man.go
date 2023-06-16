@@ -5,10 +5,11 @@ import (
 	"sort"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/userstatus"
-	"github.com/pkg/errors"
 )
 
 type MissedActivityOptions struct {
@@ -28,7 +29,7 @@ func (man *MissedActivityNotifier) logDebug(message string, a ...any) {
 }
 
 func (man *MissedActivityNotifier) ProcessMessageValidForNotification(post *model.Post, conv *model.UnreadConversation, user *model.User, cma *model.ChannelMissedActivity) bool {
-	if post.AuthorId == user.Id {
+	if post.AuthorID == user.ID {
 		cma.AppendLog("Removing post \"%s\" because the user is the author", post.Message)
 		return false
 	}
@@ -47,7 +48,7 @@ func (man *MissedActivityNotifier) ProcessMessageValidForNotification(post *mode
 		return false
 	}
 
-	if (model.MessageContainsMentions(post.Message, user.Username) || cma.Channel.IsDirect() || conv.Following) && man.UserStatuses.GetStatusForUserAtTime(user.Id, post.CreatedAt) != userstatus.Online {
+	if (model.MessageContainsMentions(post.Message, user.Username) || cma.Channel.IsDirect() || conv.Following) && man.UserStatuses.GetStatusForUserAtTime(user.ID, post.CreatedAt) != userstatus.Online {
 		if user.MANPreferences.InlcudeCountOfMessagesNotifiedByMM {
 			cma.NotifiedByMMMessages++
 		}
@@ -76,7 +77,7 @@ func (man *MissedActivityNotifier) GetChannelMissedActivity(channelMembership *m
 	}
 
 	posts, err := man.backend.GetChannelPosts(
-		channelMembership.Channel.Id,
+		channelMembership.Channel.ID,
 		lowerBound,
 		man.options.UpperBound.UnixMilli())
 
@@ -97,13 +98,13 @@ func (man *MissedActivityNotifier) GetChannelMissedActivity(channelMembership *m
 		post := posts[v]
 
 		if post.IsRoot() { // creates a new unread conversation for each root post
-			rootPostsMap[post.Id] = model.NewUnreadConversation(
+			rootPostsMap[post.ID] = model.NewUnreadConversation(
 				post,
-				man.backend.IsUserFollowingPost(post.Id, channelMembership.User.Id),
+				man.backend.IsUserFollowingPost(post.ID, channelMembership.User.ID),
 				channelMembership.LastReadPost.Before(post.CreatedAt),
 			)
 		} else { // add replies to conversations
-			conversation := rootPostsMap[post.RootId]
+			conversation := rootPostsMap[post.RootID]
 
 			valid := man.ProcessMessageValidForNotification(post, conversation, channelMembership.User, crs)
 			if valid {
@@ -140,7 +141,7 @@ func (man *MissedActivityNotifier) GetUserMissedActivity(team *model.Team, user 
 	}
 
 	// 1. get channels memeberships
-	mb, err := man.backend.GetChannelMembersForUser(team.Id, user.Id, includeDirectMessages)
+	mb, err := man.backend.GetChannelMembersForUser(team.ID, user.ID, includeDirectMessages)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +183,7 @@ func (man *MissedActivityNotifier) Run() ([]*model.TeamMissedActivity, error) {
 	res := []*model.TeamMissedActivity{}
 
 	for _, user := range users {
-		teams, err3 := man.backend.GetTeamsForUser(user.Id)
+		teams, err3 := man.backend.GetTeamsForUser(user.ID)
 		if err3 != nil {
 			return nil, errors.Wrap(err3, "Error getting team list, cannot continue")
 		}
@@ -201,7 +202,7 @@ func (man *MissedActivityNotifier) Run() ([]*model.TeamMissedActivity, error) {
 		} else {
 			// append a fake team to handle direct messages. Direct Messages does not belong
 			// to a particular Team, so to manage them uniformely we use this special team
-			teams = append(teams, model.DIRECT_MESSAGES_FAKE_TEAM)
+			teams = append(teams, model.DirectMessagesFakeTeam)
 
 			for _, team := range teams {
 				uma, err := man.GetUserMissedActivity(team, user, false)
