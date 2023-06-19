@@ -109,7 +109,7 @@ func PrintTeamMissedActivity(backend *backend.MattermostBackend, missedActivity 
 				mentionIcon = "🙊 "
 			}
 			typeIcon := ""
-			if up.RootPost.Type != "" {
+			if up.RootPost.FromBot {
 				typeIcon = "🎮 "
 			}
 			rootUnreadIcon := ""

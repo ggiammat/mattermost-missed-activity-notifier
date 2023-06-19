@@ -72,6 +72,20 @@
                 "default": false
             },
             {
+                "key": "UserDefaultIncludeSystemMessages",
+                "display_name": "[USER DEFAULT] Notifies system messages",
+                "type": "bool",
+                "help_text": "Whether to include or not in notification emails the system messages (e.g., users join/leaving a channel). This is the default value and can be overridden on per-user basis",
+                "default": false
+            },
+            {
+                "key": "UserDefaultPrefIncludeMessagesFromBots",
+                "display_name": "[USER DEFAULT] Notifies messages from bots",
+                "type": "bool",
+                "help_text": "Whether to include or not in notification emails the messages sent from bots (e.g., GitLab bot, Boards bot). This is the default value and can be overridden on per-user basis",
+                "default": true
+            },
+            {
                 "key": "UserDefaultPrefCountNotFollowed",
                 "display_name": "[USER DEFAULT] Show count of replies in not followed threads",
                 "type": "bool",

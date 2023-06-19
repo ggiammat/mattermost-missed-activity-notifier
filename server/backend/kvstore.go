@@ -2,11 +2,12 @@ package backend
 
 import (
 	"encoding/json"
+	"reflect"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
+	"github.com/oleiade/reflections"
+	"github.com/pkg/errors"
 )
 
 type MANKVStore struct {
@@ -41,7 +42,27 @@ func (mm *MattermostBackend) SetLastNotifiedTimestamp(value time.Time) error {
 	return nil
 }
 
-func (mm *MattermostBackend) ResetPreferenceEnabled(user *model.User) error {
+func (mm *MattermostBackend) ResetAllUserPrefernces() error {
+	pref, err := mm.getKVStore()
+
+	if err != nil {
+		return errors.Wrap(err, "Error getting kvStore to set user preference")
+	}
+
+	pref.UserPreferences = map[string]model.MANUserPreferences{}
+
+	errS := mm.saveKV()
+	if errS != nil {
+		return errors.Wrap(errS, "error saving kvstore")
+	}
+
+	for k, _ := range mm.usersCache.Items() {
+		mm.usersCache.Delete(k)
+	}
+	return nil
+}
+
+func (mm *MattermostBackend) ResetPreferences(user *model.User) error {
 	pref, err := mm.getKVStore()
 
 	if err != nil {
@@ -90,72 +111,26 @@ func (mm *MattermostBackend) SetPreferencesForUser(userID string, prefs model.MA
 	return nil
 }
 
-func (mm *MattermostBackend) SetPreferenceNotifyRepliesNotFollowed(user *model.User, enabled bool) error {
+func (mm *MattermostBackend) SetUserPreference(user *model.User, name string, newValue any) error {
 	prefs := mm.GetPreferencesForUser(user.ID)
 
-	if prefs.NotifyRepliesInNotFollowedThreads != enabled {
-		prefs.NotifyRepliesInNotFollowedThreads = enabled
-		err := mm.SetPreferencesForUser(user.ID, prefs)
-		if err != nil {
-			return errors.Wrap(err, "error setting preferences for user")
+	has, _ := reflections.HasField(prefs, name)
+
+	if has {
+		currentValue, _ := reflections.GetField(prefs, name)
+		if currentValue != newValue {
+			mm.LogDebug("*********** field current value: %s, field type: %s", currentValue, reflect.TypeOf(currentValue))
+			errF := reflections.SetField(&prefs, name, newValue)
+			if errF != nil {
+				return errors.Wrap(errF, "error setting preference value for user")
+			}
+			errS := mm.SetPreferencesForUser(user.ID, prefs)
+			if errS != nil {
+				return errors.Wrap(errS, "error savling preferences for user")
+			}
+			mm.LogDebug("*********** new value set for preference '%s' for user '%s': %s", name, user.Username, newValue)
 		}
 	}
-
-	return nil
-}
-
-func (mm *MattermostBackend) SetPrefCountPreviouslyNotified(user *model.User, enabled bool) error {
-	prefs := mm.GetPreferencesForUser(user.ID)
-
-	if prefs.IncludeCountPreviouslyNotified != enabled {
-		prefs.IncludeCountPreviouslyNotified = enabled
-		err := mm.SetPreferencesForUser(user.ID, prefs)
-		if err != nil {
-			return errors.Wrap(err, "error setting preferences for user")
-		}
-	}
-
-	return nil
-}
-
-func (mm *MattermostBackend) SetPreferenceCountNotifiedByMM(user *model.User, enabled bool) error {
-	prefs := mm.GetPreferencesForUser(user.ID)
-
-	if prefs.InlcudeCountOfMessagesNotifiedByMM != enabled {
-		prefs.InlcudeCountOfMessagesNotifiedByMM = enabled
-		err := mm.SetPreferencesForUser(user.ID, prefs)
-		if err != nil {
-			return errors.Wrap(err, "error setting preferences for user")
-		}
-	}
-
-	return nil
-}
-
-func (mm *MattermostBackend) SetPreferenceCountRepliesNotFollowed(user *model.User, enabled bool) error {
-	prefs := mm.GetPreferencesForUser(user.ID)
-
-	if prefs.IncludeCountOfRepliesInNotFollowedThreads != enabled {
-		prefs.IncludeCountOfRepliesInNotFollowedThreads = enabled
-		err := mm.SetPreferencesForUser(user.ID, prefs)
-		if err != nil {
-			return errors.Wrap(err, "error setting preferences for user")
-		}
-	}
-
-	return nil
-}
-
-func (mm *MattermostBackend) SetPreferenceEnabled(user *model.User, enabled bool) error {
-	prefs := mm.GetPreferencesForUser(user.ID)
-	if prefs.Enabled != enabled {
-		prefs.Enabled = enabled
-		err := mm.SetPreferencesForUser(user.ID, prefs)
-		if err != nil {
-			return errors.Wrap(err, "error setting preferences for user")
-		}
-	}
-
 	return nil
 }
 

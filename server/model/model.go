@@ -12,6 +12,8 @@ type MANUserPreferences struct {
 	IncludeCountOfRepliesInNotFollowedThreads bool
 	InlcudeCountOfMessagesNotifiedByMM        bool
 	IncludeCountPreviouslyNotified            bool
+	IncludeSystemMessages                     bool
+	IncludeMessagesFromBots                   bool
 }
 
 type TeamMissedActivity struct {
@@ -27,12 +29,14 @@ func (uma *TeamMissedActivity) AppendLog(message string, a ...any) {
 
 // posts coming from the db
 type Post struct {
-	ID        string
-	Message   string
-	AuthorID  string
-	CreatedAt time.Time
-	RootID    string
-	Type      string
+	ID              string
+	Message         string
+	AuthorID        string
+	CreatedAt       time.Time
+	RootID          string
+	Type            string
+	FromBot         bool
+	IsSystemMessage bool
 }
 
 func (p *Post) IsRoot() bool {

@@ -25,6 +25,8 @@ type configuration struct {
 	UserDefaultPrefCountNotFollowed        bool
 	UserDefaultPrefCountMM                 bool
 	UserDefaultPrefCountPreviouslyNotified bool
+	UserDefaultIncludeSystemMessages       bool
+	UserDefaultPrefIncludeMessagesFromBots bool
 }
 
 // Clone shallow copies the configuration. Your implementation may require a deep copy if

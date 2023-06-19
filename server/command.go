@@ -3,10 +3,12 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 	"strings"
 
 	mm_model "github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin"
+	"github.com/oleiade/reflections"
 	"github.com/pkg/errors"
 
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
@@ -34,6 +36,7 @@ func commandStats(user *model.User, _ []string, backend *backend.MattermostBacke
 	if !user.IsAdmin() {
 		return "Only administrators can see stats", nil
 	}
+
 	out := output.PrintUserStatuses(userstatus, backend, manRunStats.sentEmailStats)
 
 	buf := new(bytes.Buffer)
@@ -48,110 +51,74 @@ func commandStats(user *model.User, _ []string, backend *backend.MattermostBacke
 		}
 	}
 
-	return fmt.Sprintf("# Users Report\n```%s```\n# Run Logs\n%s", out, buf.String()), nil
+	return fmt.Sprintf("# Run Logs\n%s\n# Users Report\n```%s```", buf.String(), out), nil
+}
+
+func commandResetAll(user *model.User, backend *backend.MattermostBackend) (string, error) {
+	if !user.IsAdmin() {
+		return "Only administrators can reset all user preferences", nil
+	}
+
+	backend.ResetAllUserPrefernces()
+
+	return "All user preferences reset", nil
 }
 
 func commandPrefs(user *model.User, args []string, backend *backend.MattermostBackend) (string, error) {
 	if len(args) == 1 {
 		switch args[0] {
 		case "show":
-			out := fmt.Sprintf("Plugin Enabled: %t\nNotify replies in not followed posts (notify-replies-not-followed): %t\nShow count of replies in not followed posts (count-replies-not-followed): %t\nShow count of messages notified by Mattermost (count-notified-by-mm): %t\nShow count of previously notified messages by this plugin (count-previous-notified): %t\n",
-				user.MANPreferences.Enabled,
-				user.MANPreferences.NotifyRepliesInNotFollowedThreads,
-				user.MANPreferences.IncludeCountOfRepliesInNotFollowedThreads,
-				user.MANPreferences.InlcudeCountOfMessagesNotifiedByMM,
-				user.MANPreferences.IncludeCountPreviouslyNotified)
+			out := "### Current preferences:\n"
+			res, _ := reflections.Items(user.MANPreferences)
+			for k, v := range res {
+				out += fmt.Sprintf("  - **%s**: %v\n", k, v)
+			}
 			return out, nil
+
 		case "reset":
-			err := backend.ResetPreferenceEnabled(user)
+			err := backend.ResetPreferences(user)
 			if err != nil {
 				return "", err
 			}
-			return "plugin reset", nil
+			return "preferences reset", nil
 		}
 	}
 
 	if len(args) == 2 {
-		switch args[0] {
-		case "enabled":
-			if args[1] == "true" {
-				err := backend.SetPreferenceEnabled(user, true)
-				if err != nil {
-					return "", err
-				}
-				return "plugin enabled", nil
-			}
-			if args[1] == "false" {
-				err := backend.SetPreferenceEnabled(user, false)
-				if err != nil {
-					return "", err
-				}
-				return "plugin disabled", nil
-			}
-		case "notify-replies-not-followed":
-			if args[1] == "true" {
-				err := backend.SetPreferenceNotifyRepliesNotFollowed(user, true)
-				if err != nil {
-					return "", err
-				}
-				return "notify-replies-not-followed enabled", nil
-			}
-			if args[1] == "false" {
-				err := backend.SetPreferenceNotifyRepliesNotFollowed(user, false)
-				if err != nil {
-					return "", err
-				}
-				return "notify-replies-not-followed disabled", nil
-			}
-		case "count-replies-not-followed":
-			if args[1] == "true" {
-				err := backend.SetPreferenceCountRepliesNotFollowed(user, true)
-				if err != nil {
-					return "", err
-				}
-				return "count-replies-not-followed enabled", nil
-			}
-			if args[1] == "false" {
-				err := backend.SetPreferenceCountRepliesNotFollowed(user, false)
-				if err != nil {
-					return "", err
-				}
-				return "count-replies-not-followed disabled", nil
-			}
-		case "count-notified-by-mm":
-			if args[1] == "true" {
-				err := backend.SetPreferenceCountNotifiedByMM(user, true)
-				if err != nil {
-					return "", err
-				}
-				return "count-notified-by-mm enabled", nil
-			}
-			if args[1] == "false" {
-				err := backend.SetPreferenceCountNotifiedByMM(user, false)
-				if err != nil {
-					return "", err
-				}
-				return "count-notified-by-mm disabled", nil
-			}
-		case "count-previous-notified":
-			if args[1] == "true" {
-				err := backend.SetPrefCountPreviouslyNotified(user, true)
-				if err != nil {
-					return "", err
-				}
-				return "count-previous-notified enabled", nil
-			}
-			if args[1] == "false" {
-				err := backend.SetPrefCountPreviouslyNotified(user, false)
-				if err != nil {
-					return "", err
-				}
-				return "count-previous-notified disabled", nil
-			}
+		field := args[0]
+		has, _ := reflections.HasField(user.MANPreferences, field)
+
+		if !has {
+			return fmt.Sprintf("invalid preference name '%s'", field), nil
 		}
+
+		currValue, _ := reflections.GetField(user.MANPreferences, field)
+		var newVal any
+
+		// convert new value from string to the field type (at the moment)
+		// all preferences are bool, but in future new preferences could
+		// be added
+		switch currValue.(type) {
+		case string:
+			newVal = args[1]
+		case bool:
+			boolValue, errB := strconv.ParseBool(args[1])
+			if errB != nil {
+				return "", errB
+			}
+			newVal = boolValue
+		}
+
+		errS := backend.SetUserPreference(user, field, newVal)
+		if errS != nil {
+			return "", errS
+		}
+
+		return fmt.Sprintf("preference %s = %t", field, newVal), nil
+
 	}
 
-	return "invalid arguments", nil
+	return "invalid number of arguments", nil
 }
 
 func (p *MANPlugin) executeCommandImpl(userID string, command string, args []string) (string, error) {
@@ -174,8 +141,10 @@ func (p *MANPlugin) executeCommandImpl(userID string, command string, args []str
 		return helpMsg, nil
 	case "stats":
 		return commandStats(user, args, p.backend, p.manRunStats, p.userStatuses)
+	case "reset-all-user-prefs":
+		return commandResetAll(user, p.backend)
 	}
-	return "Specify a command: 'status', 'enable', 'disable'", nil
+	return "Invalid command", nil
 }
 
 // Mattermost Hook

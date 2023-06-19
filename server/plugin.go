@@ -58,6 +58,8 @@ func (p *MANPlugin) CreateMattermostBackend() error {
 		IncludeCountOfRepliesInNotFollowedThreads: p.configuration.UserDefaultPrefCountNotFollowed,
 		InlcudeCountOfMessagesNotifiedByMM:        p.configuration.UserDefaultPrefCountMM,
 		IncludeCountPreviouslyNotified:            p.configuration.UserDefaultPrefCountPreviouslyNotified,
+		IncludeSystemMessages:                     p.configuration.UserDefaultIncludeSystemMessages,
+		IncludeMessagesFromBots:                   p.configuration.UserDefaultPrefIncludeMessagesFromBots,
 	}
 
 	backend, err := backend.NewMattermostBackend(

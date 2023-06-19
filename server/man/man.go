@@ -34,11 +34,16 @@ func (man *MissedActivityNotifier) ProcessMessageValidForNotification(post *mode
 		return false
 	}
 
-	// at the moment this check is done in the backend and so it is useless here
-	// if post.Type != "" {
-	//  	cma.AppendLog("Removing post \"%s\" because it is a system message", post.Message)
-	//  	return false
-	// }
+	// TODO: bot messages are also system messages
+	if post.IsSystemMessage && !post.FromBot && !user.MANPreferences.IncludeSystemMessages {
+		cma.AppendLog("Removing post \"%s\" because it is a system message", post.Message)
+		return false
+	}
+
+	if post.FromBot && !user.MANPreferences.IncludeMessagesFromBots {
+		cma.AppendLog("Removing post \"%s\" because it is a message from a bot", post.Message)
+		return false
+	}
 
 	if !post.IsRoot() && !conv.Following && !user.MANPreferences.NotifyRepliesInNotFollowedThreads {
 		if user.MANPreferences.IncludeCountOfRepliesInNotFollowedThreads {
@@ -150,6 +155,9 @@ func (man *MissedActivityNotifier) GetUserMissedActivity(team *model.Team, user 
 
 	// 2. for each not muted channel where the user is member, get the missed activity
 	for _, channelMembership := range mb {
+
+		man.backend.LogDebug("§§§§§§§§§§§§ user %s in channel %s, ", channelMembership.User.Username, channelMembership.Channel.GetChannelName(channelMembership.User))
+
 		if channelMembership.IsMuted() {
 			man.logDebug("Skipping channel '%s' for user '%s' because it has been muted", channelMembership.Channel.GetChannelName(channelMembership.User), channelMembership.User.Username)
 			continue

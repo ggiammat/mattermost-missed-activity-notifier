@@ -2,6 +2,7 @@ package backend
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/patrickmn/go-cache"
@@ -71,19 +72,41 @@ func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot 
 		post := posts.Posts[posts.Order[v]]
 
 		// discard posts out of the range, deleted or of type different than normal (e.g., system messages)
-		if post.CreateAt > tot || post.DeleteAt > 0 || post.Type != "" {
+		if post.CreateAt > tot || post.DeleteAt > 0 {
 			continue
 		}
 
-		// elements  come from the API ordered from the newer to the older,
-		// we sort elements in the reverse order... from the older to the newest
+		postProps := post.GetProps()
+
+		fromBot := false
+		if val, ok := postProps["from_bot"]; ok {
+			res, err := strconv.ParseBool(val.(string))
+			if err != nil {
+				mm.LogError("error parsing 'from_bot' property: %+v", val)
+			} else {
+				fromBot = res
+			}
+		}
+
+		msg := post.Message
+		// in some cases (e.g., messages from boards bot) does not have the text in the Message field, but it is in the props
+		// this is an hack to get the text of the message. The type conversions could be avoided using Mattermost's types like
+		// PostTypeSlackAttachment
+		if post.Type == "slack_attachment" {
+			//x := postProps["attachments"].([]interface{})[0].(map[string]interface{})
+			//msg = x["fallback"].(string)
+			msg = fmt.Sprintf("%+v", post)
+		}
+
 		newpost := &model.Post{
-			ID:        post.Id,
-			Type:      post.Type,
-			Message:   post.Message,
-			AuthorID:  post.UserId,
-			CreatedAt: time.UnixMilli(post.CreateAt),
-			RootID:    post.RootId,
+			ID:              post.Id,
+			Type:            post.Type,
+			Message:         msg,
+			AuthorID:        post.UserId,
+			CreatedAt:       time.UnixMilli(post.CreateAt),
+			RootID:          post.RootId,
+			FromBot:         fromBot,
+			IsSystemMessage: post.Type != "",
 		}
 		res = append([]*model.Post{newpost}, res...)
 	}
@@ -109,6 +132,7 @@ func (mm *MattermostBackend) GetChannelMembersForUser(teamID string, userID stri
 
 	for _, mb := range memberships {
 		ch, err := mm.GetChannel(mb.ChannelId)
+
 		if err != nil {
 			return nil, fmt.Errorf("error getting channel while getting channel memberships: %s", err)
 		}

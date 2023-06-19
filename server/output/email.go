@@ -4,14 +4,18 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"html"
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
 
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
@@ -71,9 +75,15 @@ type templateData struct {
 	HTML  map[string]string
 }
 
-func formatMessage(message string) template.HTML {
-	//nolint:gocritic,gosec
-	return template.HTML(strings.Replace(template.HTMLEscapeString(message), "\n", "<br>", -1))
+func formatMessage(message string, siteUrl string) template.HTML {
+
+	postMessage := html.EscapeString(message)
+	mdPostMessage, mdErr := MarkdownToHTML(postMessage, siteUrl)
+	if mdErr != nil {
+		mdPostMessage = postMessage
+	}
+
+	return template.HTML(mdPostMessage)
 }
 
 func toBase64(bytes []byte) template.URL {
@@ -98,6 +108,35 @@ func toBase64(bytes []byte) template.URL {
 	base64Encoding += base64.StdEncoding.EncodeToString(bytes)
 	//nolint:gosec
 	return template.URL(base64Encoding)
+}
+
+// adaptation of the MarkdownToHTML() function in Mattermost's  server/channels/utils/markdown.go
+// to mimic the emails sent by Mattermost
+var relLinkReg = regexp.MustCompile(`\[(.*)]\((/.*)\)`)
+var blockquoteReg = regexp.MustCompile(`^|\n(&gt;)`)
+
+func MarkdownToHTML(markdown, siteURL string) (string, error) {
+	// Turn relative links into absolute links
+	absLinkMarkdown := relLinkReg.ReplaceAllStringFunc(markdown, func(s string) string {
+		return relLinkReg.ReplaceAllString(s, "[$1]("+siteURL+"$2)")
+	})
+
+	// Unescape any blockquote text to be parsed by the markdown parser.
+	markdownClean := blockquoteReg.ReplaceAllStringFunc(absLinkMarkdown, func(s string) string {
+		return html.UnescapeString(s)
+	})
+
+	md := goldmark.New(
+		goldmark.WithExtensions(extension.GFM),
+	)
+
+	var b strings.Builder
+
+	err := md.Convert([]byte(markdownClean), &b)
+	if err != nil {
+		return "", err
+	}
+	return b.String(), nil
 }
 
 func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.TeamMissedActivity, props *EmailTemplateProps) (string, string, error) {
@@ -158,7 +197,7 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 
 			p := postData{
 				SenderName:  author.DisplayName(),
-				Message:     formatMessage(conv.RootPost.Message),
+				Message:     formatMessage(conv.RootPost.Message, serverURL),
 				Time:        conv.RootPost.CreatedAt.Format(time.RFC822),
 				SenderPhoto: toBase64(author.Image),
 				Link:        buildMessageLink(conv.RootPost),
@@ -174,7 +213,7 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 
 				p := postData{
 					SenderName:  author.DisplayName(),
-					Message:     formatMessage(rep.Message),
+					Message:     formatMessage(rep.Message, serverURL),
 					Time:        rep.CreatedAt.Format(time.RFC822),
 					SenderPhoto: toBase64(author.Image),
 					Link:        buildMessageLink(rep),
@@ -197,14 +236,10 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 	}
 
 	sort.Slice(channels, func(i, j int) bool {
-		backend.LogDebug("Comparison %d, %d || %s, %s", len(channels[i].Conversations), len(channels[j].Conversations), channels[i].ChannelName, channels[j].ChannelName)
-
 		diff := len(channels[i].Conversations) - len(channels[j].Conversations)
-
 		if diff != 0 {
 			return diff > 0
 		}
-
 		return channels[i].ChannelName < channels[j].ChannelName
 	})
 
