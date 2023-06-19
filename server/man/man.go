@@ -34,8 +34,7 @@ func (man *MissedActivityNotifier) ProcessMessageValidForNotification(post *mode
 		return false
 	}
 
-	// TODO: bot messages are also system messages
-	if post.IsSystemMessage && !post.FromBot && !user.MANPreferences.IncludeSystemMessages {
+	if post.IsSystemMessage && !user.MANPreferences.IncludeSystemMessages {
 		cma.AppendLog("Removing post \"%s\" because it is a system message", post.Message)
 		return false
 	}

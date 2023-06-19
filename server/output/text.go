@@ -119,7 +119,7 @@ func PrintTeamMissedActivity(backend *backend.MattermostBackend, missedActivity 
 
 			conversationText := up.RootPost.Message
 			fmt.Fprintf(w, "┊ %s %s wrote:  %s%s%s%s\n", author.Username, str5, followingIcon, mentionIcon, typeIcon, rootUnreadIcon)
-			fmt.Fprintf(w, "┊  | %s [at: %d]\n", up.RootPost.Message, up.RootPost.CreatedAt.UnixMilli())
+			fmt.Fprintf(w, "┊  | %s (type: %s) [at: %d]\n", up.RootPost.Message, up.RootPost.Type, up.RootPost.CreatedAt.UnixMilli())
 			if len(up.Replies) > 0 {
 				for _, r := range up.Replies {
 					fmt.Fprintf(w, "┊  |   > %s [at: %d]\n", r.Message, r.CreatedAt.UnixMilli())

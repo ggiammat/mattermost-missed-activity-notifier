@@ -110,7 +110,7 @@ func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot 
 			CreatedAt:       time.UnixMilli(post.CreateAt),
 			RootID:          post.RootId,
 			FromBot:         fromBot,
-			IsSystemMessage: post.Type != "",
+			IsSystemMessage: strings.HasPrefix(post.Type, "system_"),
 		}
 		res = append([]*model.Post{newpost}, res...)
 	}
