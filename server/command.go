@@ -59,7 +59,10 @@ func commandResetAll(user *model.User, backend *backend.MattermostBackend) (stri
 		return "Only administrators can reset all user preferences", nil
 	}
 
-	backend.ResetAllUserPrefernces()
+	err := backend.ResetAllUserPrefernces()
+	if err != nil {
+		return "", err
+	}
 
 	return "All user preferences reset", nil
 }
@@ -115,9 +118,7 @@ func commandPrefs(user *model.User, args []string, backend *backend.MattermostBa
 		}
 
 		return fmt.Sprintf("preference %s = %t", field, newVal), nil
-
 	}
-
 	return "invalid number of arguments", nil
 }
 

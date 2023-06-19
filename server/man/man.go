@@ -155,9 +155,6 @@ func (man *MissedActivityNotifier) GetUserMissedActivity(team *model.Team, user 
 
 	// 2. for each not muted channel where the user is member, get the missed activity
 	for _, channelMembership := range mb {
-
-		man.backend.LogDebug("§§§§§§§§§§§§ user %s in channel %s, ", channelMembership.User.Username, channelMembership.Channel.GetChannelName(channelMembership.User))
-
 		if channelMembership.IsMuted() {
 			man.logDebug("Skipping channel '%s' for user '%s' because it has been muted", channelMembership.Channel.GetChannelName(channelMembership.User), channelMembership.User.Username)
 			continue

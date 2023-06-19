@@ -2,12 +2,12 @@ package backend
 
 import (
 	"encoding/json"
-	"reflect"
 	"time"
 
-	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 	"github.com/oleiade/reflections"
 	"github.com/pkg/errors"
+
+	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 )
 
 type MANKVStore struct {
@@ -56,7 +56,7 @@ func (mm *MattermostBackend) ResetAllUserPrefernces() error {
 		return errors.Wrap(errS, "error saving kvstore")
 	}
 
-	for k, _ := range mm.usersCache.Items() {
+	for k := range mm.usersCache.Items() {
 		mm.usersCache.Delete(k)
 	}
 	return nil
@@ -119,7 +119,6 @@ func (mm *MattermostBackend) SetUserPreference(user *model.User, name string, ne
 	if has {
 		currentValue, _ := reflections.GetField(prefs, name)
 		if currentValue != newValue {
-			mm.LogDebug("*********** field current value: %s, field type: %s", currentValue, reflect.TypeOf(currentValue))
 			errF := reflections.SetField(&prefs, name, newValue)
 			if errF != nil {
 				return errors.Wrap(errF, "error setting preference value for user")
@@ -128,7 +127,6 @@ func (mm *MattermostBackend) SetUserPreference(user *model.User, name string, ne
 			if errS != nil {
 				return errors.Wrap(errS, "error savling preferences for user")
 			}
-			mm.LogDebug("*********** new value set for preference '%s' for user '%s': %s", name, user.Username, newValue)
 		}
 	}
 	return nil

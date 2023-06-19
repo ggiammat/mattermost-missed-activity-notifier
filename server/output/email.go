@@ -75,14 +75,14 @@ type templateData struct {
 	HTML  map[string]string
 }
 
-func formatMessage(message string, siteUrl string) template.HTML {
-
+func formatMessage(message string, siteURL string) template.HTML {
 	postMessage := html.EscapeString(message)
-	mdPostMessage, mdErr := MarkdownToHTML(postMessage, siteUrl)
+	mdPostMessage, mdErr := MarkdownToHTML(postMessage, siteURL)
 	if mdErr != nil {
 		mdPostMessage = postMessage
 	}
 
+	//nolint:gosec
 	return template.HTML(mdPostMessage)
 }
 
@@ -122,6 +122,7 @@ func MarkdownToHTML(markdown, siteURL string) (string, error) {
 	})
 
 	// Unescape any blockquote text to be parsed by the markdown parser.
+	// nolint
 	markdownClean := blockquoteReg.ReplaceAllStringFunc(absLinkMarkdown, func(s string) string {
 		return html.UnescapeString(s)
 	})

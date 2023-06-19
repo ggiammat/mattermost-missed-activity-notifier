@@ -3,6 +3,7 @@ package backend
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/patrickmn/go-cache"
@@ -95,6 +96,10 @@ func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot 
 		if post.Type == "slack_attachment" {
 			x := postProps["attachments"].([]interface{})[0].(map[string]interface{})
 			msg = x["fallback"].(string)
+			// hack to avoid having message interpreted as heading
+			if strings.HasPrefix(msg, "######") {
+				msg = msg[7:]
+			}
 		}
 
 		newpost := &model.Post{
