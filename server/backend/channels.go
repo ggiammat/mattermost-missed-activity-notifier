@@ -93,9 +93,8 @@ func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot 
 		// this is an hack to get the text of the message. The type conversions could be avoided using Mattermost's types like
 		// PostTypeSlackAttachment
 		if post.Type == "slack_attachment" {
-			//x := postProps["attachments"].([]interface{})[0].(map[string]interface{})
-			//msg = x["fallback"].(string)
-			msg = fmt.Sprintf("%+v", post)
+			x := postProps["attachments"].([]interface{})[0].(map[string]interface{})
+			msg = x["fallback"].(string)
 		}
 
 		newpost := &model.Post{
