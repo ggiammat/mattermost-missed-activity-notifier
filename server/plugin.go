@@ -3,12 +3,8 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"math"
-	"net/http"
 
-	//nolint:gosec
-	_ "net/http/pprof"
 	"sync"
 	"time"
 
@@ -78,11 +74,6 @@ func (p *MANPlugin) CreateMattermostBackend() error {
 
 func (p *MANPlugin) OnActivate() error {
 	p.startupTime = time.Now()
-
-	go func() {
-		//nolint:gosec
-		log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
-	}()
 
 	// get user status now to populate statuses with an initial entry
 	p.userStatuses = userstatus.NewUserStatusesTracker()
