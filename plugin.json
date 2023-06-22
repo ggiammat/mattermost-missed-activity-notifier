@@ -142,14 +142,20 @@
                 "help_text": "The text of the third line of the footer that will appear in the emails",
                 "default": "This email is sent from the Missed Activity Notifier plugin. If you think you should have not received this message, please contact your Mattermost administrator."
             },
-
-
             {
                 "key": "DebugLogEnabled",
                 "display_name": "[DEBUG] Enable debug logs",
                 "type": "bool",
                 "help_text": "If true print all message logs, otherwise print only error, warning and info level messages",
                 "default": false
+            },
+            {
+                "key": "DebugHTTPToken",
+                "display_name": "Debug Token:",
+                "type": "generated",
+                "help_text": "Token to access debug logs through http",
+                "placeholder": "",
+                "default": null
             },
             {
                 "key": "RunStatsToKeep",

@@ -27,6 +27,7 @@ type configuration struct {
 	UserDefaultPrefCountPreviouslyNotified bool
 	UserDefaultIncludeSystemMessages       bool
 	UserDefaultPrefIncludeMessagesFromBots bool
+	DebugHTTPToken                         string
 }
 
 // Clone shallow copies the configuration. Your implementation may require a deep copy if

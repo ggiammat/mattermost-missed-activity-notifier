@@ -73,6 +73,12 @@ func (p *MANPlugin) manualRun(buf http.ResponseWriter, lower time.Time, upper ti
 }
 
 func (p *MANPlugin) ServeHTTP(_ *plugin.Context, w http.ResponseWriter, r *http.Request) {
+	configToken := p.getConfiguration().DebugHTTPToken
+	if configToken == "" || r.Header.Get("X-Debug-Token") != configToken {
+		fmt.Fprint(w, "invalid token")
+		return
+	}
+
 	fmt.Fprintf(w, "<a href=\"/plugins/com.mattermost.missed-activity-notifier?status\">STATUS</a> | <a href=\"/plugins/com.mattermost.missed-activity-notifier?history\">HISTORY</a> | Now %s |<br/>", time.Now().Format(time.RFC822))
 
 	//nolint:gocritic
