@@ -33,7 +33,7 @@
                 "display_name": "Run interval (minutes):",
                 "type": "number",
                 "help_text": "The time interval with which the plugin will check for unread messages and will send email notifications. This interval also influences the internal caches expiration time (set at *interval/2*).",
-                "default": 120
+                "default": 180
             },
             {
                 "key": "IgnoreMessagesNewerThan",
