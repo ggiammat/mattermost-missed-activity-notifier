@@ -93,12 +93,14 @@ func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot 
 		// in some cases (e.g., messages from boards bot) does not have the text in the Message field, but it is in the props
 		// this is an hack to get the text of the message. The type conversions could be avoided using Mattermost's types like
 		// PostTypeSlackAttachment
-		if post.Type == "slack_attachment" {
-			x := postProps["attachments"].([]interface{})[0].(map[string]interface{})
-			msg = x["fallback"].(string)
-			// hack to avoid having message interpreted as heading
-			if strings.HasPrefix(msg, "######") {
-				msg = msg[7:]
+		if msg == "" {
+			if val, ok := postProps["attachments"]; ok {
+				x := val.([]interface{})[0].(map[string]interface{})
+				msg = x["fallback"].(string)
+				// hack to avoid having message interpreted as heading
+				if strings.HasPrefix(msg, "######") {
+					msg = msg[7:]
+				}
 			}
 		}
 
