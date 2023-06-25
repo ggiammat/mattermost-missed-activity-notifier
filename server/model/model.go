@@ -86,6 +86,7 @@ type User struct {
 	EmailsEnabled  bool
 	Image          []byte
 	MANPreferences MANUserPreferences
+	AltText        string // alternative text to show if the user photo cannot be visualized (e.g. in GMail client)
 }
 
 func (u *User) IsAdmin() bool {

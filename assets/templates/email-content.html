@@ -55,12 +55,7 @@
           .mj-outlook-group-fix { width:100% !important; }
         </style>
         <![endif]-->
-  <!--[if !mso]><!-->
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,700" rel="stylesheet" type="text/css">
-  <style type="text/css">
-    @import url(https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,700);
-  </style>
-  <!--<![endif]-->
+
   
   <style type="text/css">
     @media only screen and (min-width:480px) {
@@ -272,6 +267,8 @@
       height: 10px;
       padding: 5px 4px 5px 6px;
       float: left;
+      font-size: 9px;
+      color: rgba(63, 67, 80, 0.64);
     }
 
     .channelName {
@@ -551,38 +548,6 @@
     <tbody>
       <tr>
         <td style="direction:ltr;font-size:0px;padding:24px;text-align:center;">
-          <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" style="width:552px;" width="552" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-          <div style="margin:0px auto;max-width:552px;">
-            <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-              <tbody>
-                <tr>
-                  <td style="direction:ltr;font-size:0px;padding:0px 0px 40px 0px;text-align:center;">
-                    <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]-->
-                    <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-                      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
-                        <tbody>
-                          <tr>
-                            <td align="center" style="font-size:0px;padding:0px;word-break:break-word;">
-                              <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
-                                <tbody>
-                                  <tr>
-                                    <td style="width:132px;">
-                                      <img alt height="21" src="{{.Props.SiteURL}}/static/images/logo_email_dark.png" style="border:0;display:block;outline:none;text-decoration:none;height:21.76px;width:100%;font-size:13px;" width="132">
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    <!--[if mso | IE]></td></tr></table><![endif]-->
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
           <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" style="width:552px;" width="552" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
           <div style="margin:0px auto;max-width:552px;">
             <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
@@ -638,14 +603,11 @@
               
               {{if .ChannelName}}
               <div class="channelBg" style="background: rgba(63, 67, 80, 0.08); border-radius: 4px; display: flex; padding-left: 4px;">
-                {{if .ShowChannelIcon}}
-                <div class="channelLogo" style="width: 10px; height: 10px; padding: 5px 4px 5px 6px; float: left;"><img src="{{$.Props.SiteURL}}/static/images/channel_icon.png" width="10px" height="10px"></div>
-                {{end}}
                 <div class="channelName" style="font-family: Open Sans, sans-serif; font-weight: 600; font-size: 10px; line-height: 16px; letter-spacing: 0.01em; text-transform: uppercase; color: rgba(63, 67, 80, 0.64); padding: 2px 6px 2px 0px;">
                   {{if .OtherChannelMembersCount}}
                   <span class="gmChannelCount" style="background-color: rgba(63, 67, 80, 0.2); padding: 0 5px; border-radius: 2px; margin-right: 2px;">{{.OtherChannelMembersCount}}</span>
                   {{end}}
-                  {{.ChannelName}}
+                  &#x1F310; {{.ChannelName}}
                 </div>
               </div>
               {{end}}
@@ -678,7 +640,7 @@
                                     <tbody>
                                       <tr>
                                         <td style="width:184px;">
-                                          <img alt="No Photo" height="32" src="{{.RootPost.SenderPhoto}}" style="border: 0; display: block; outline: none; text-decoration: none; font-size: 13px; width: 32px; height: 32px; padding: 0px; border-radius: 32px;" width="32">
+                                          <img alt="{{.RootPost.SenderAltPhoto}}" height="32" src="{{.RootPost.SenderPhoto}}" style="border: 0; display: block; outline: none; text-decoration: none; font-size: 24px; width: 32px; height: 32px; padding: 0px; border-radius: 32px;" width="32">
                                         </td>
                                       </tr>
                                     </tbody>
@@ -702,7 +664,7 @@
                                     <div class="time" style="font-family: Open Sans, sans-serif; font-size: 12px; line-height: 16px; color: rgba(63, 67, 80, 0.56); padding: 2px 6px; align-items: center; float: left;">{{.RootPost.Time}}</div>
                                     {{end}}
                                     {{if .RootPost.Link}}
-                                    <a style="font-family: Open Sans, sans-serif; font-size: 12px; line-height: 16px; color: rgba(63, 67, 80, 0.56); padding: 2px 6px; align-items: center; float: left;" href="{{.RootPost.Link}}" target="_blank" rel="noopener noreferrer"><svg alt="Link" xmlns="http://www.w3.org/2000/svg" version="1.1" width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M10.59,13.41C11,13.8 11,14.44 10.59,14.83C10.2,15.22 9.56,15.22 9.17,14.83C7.22,12.88 7.22,9.71 9.17,7.76V7.76L12.71,4.22C14.66,2.27 17.83,2.27 19.78,4.22C21.73,6.17 21.73,9.34 19.78,11.29L18.29,12.78C18.3,11.96 18.17,11.14 17.89,10.36L18.36,9.88C19.54,8.71 19.54,6.81 18.36,5.64C17.19,4.46 15.29,4.46 14.12,5.64L10.59,9.17C9.41,10.34 9.41,12.24 10.59,13.41M13.41,9.17C13.8,8.78 14.44,8.78 14.83,9.17C16.78,11.12 16.78,14.29 14.83,16.24V16.24L11.29,19.78C9.34,21.73 6.17,21.73 4.22,19.78C2.27,17.83 2.27,14.66 4.22,12.71L5.71,11.22C5.7,12.04 5.83,12.86 6.11,13.65L5.64,14.12C4.46,15.29 4.46,17.19 5.64,18.36C6.81,19.54 8.71,19.54 9.88,18.36L13.41,14.83C14.59,13.66 14.59,11.76 13.41,10.59C13,10.2 13,9.56 13.41,9.17Z"></path></svg></a>
+                                    <a style="font-family: Open Sans, sans-serif; font-size: 12px; line-height: 16px; color: rgba(63, 67, 80, 0.56); padding: 2px 6px; align-items: center; float: left;" href="{{.RootPost.Link}}" target="_blank" rel="noopener noreferrer">&#x1F517;</a>
                                     {{end}}
                                   </div>
                                 </td>
@@ -731,7 +693,7 @@
                                       <tbody>
                                         <tr>
                                           <td style="width:184px;">
-                                            <img alt height="32" src="{{.SenderPhoto }}" style="border: 0; display: block; outline: none; text-decoration: none; font-size: 13px; width: 32px; height: 32px; padding: 0px; border-radius: 32px;" width="32">
+                                            <img alt="{{.SenderAltPhoto}}" height="32" src="{{.SenderPhoto }}" style="border: 0; display: block; outline: none; text-decoration: none; font-size: 24px; width: 32px; height: 32px; padding: 0px; border-radius: 32px;" width="32">
                                           </td>
                                         </tr>
                                       </tbody>
@@ -755,7 +717,7 @@
                                       <div class="time" style="font-family: Open Sans, sans-serif; font-size: 12px; line-height: 16px; color: rgba(63, 67, 80, 0.56); padding: 2px 6px; align-items: center; float: left;">{{.Time}}</div>
                                       {{end}}
                                       {{if .Link}}
-                                      <a style="font-family: Open Sans, sans-serif; font-size: 12px; line-height: 16px; color: rgba(63, 67, 80, 0.56); padding: 2px 6px; align-items: center; float: left;" href="{{.Link}}" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M10.59,13.41C11,13.8 11,14.44 10.59,14.83C10.2,15.22 9.56,15.22 9.17,14.83C7.22,12.88 7.22,9.71 9.17,7.76V7.76L12.71,4.22C14.66,2.27 17.83,2.27 19.78,4.22C21.73,6.17 21.73,9.34 19.78,11.29L18.29,12.78C18.3,11.96 18.17,11.14 17.89,10.36L18.36,9.88C19.54,8.71 19.54,6.81 18.36,5.64C17.19,4.46 15.29,4.46 14.12,5.64L10.59,9.17C9.41,10.34 9.41,12.24 10.59,13.41M13.41,9.17C13.8,8.78 14.44,8.78 14.83,9.17C16.78,11.12 16.78,14.29 14.83,16.24V16.24L11.29,19.78C9.34,21.73 6.17,21.73 4.22,19.78C2.27,17.83 2.27,14.66 4.22,12.71L5.71,11.22C5.7,12.04 5.83,12.86 6.11,13.65L5.64,14.12C4.46,15.29 4.46,17.19 5.64,18.36C6.81,19.54 8.71,19.54 9.88,18.36L13.41,14.83C14.59,13.66 14.59,11.76 13.41,10.59C13,10.2 13,9.56 13.41,9.17Z"></path></svg></a>
+                                      <a style="font-family: Open Sans, sans-serif; font-size: 12px; line-height: 16px; color: rgba(63, 67, 80, 0.56); padding: 2px 6px; align-items: center; float: left;" href="{{.Link}}" target="_blank" rel="noopener noreferrer">&#x1F517;</a>
                                       {{end}}
 
                                     </div>

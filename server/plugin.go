@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math"
+	"math/rand"
 
 	"sync"
 	"time"
@@ -73,6 +74,8 @@ func (p *MANPlugin) CreateMattermostBackend() error {
 }
 
 func (p *MANPlugin) OnActivate() error {
+	rand.Seed(time.Now().UnixNano())
+
 	p.startupTime = time.Now()
 
 	// get user status now to populate statuses with an initial entry

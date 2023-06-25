@@ -2,6 +2,7 @@ package backend
 
 import (
 	"fmt"
+	"math/rand"
 
 	mm_model "github.com/mattermost/mattermost-server/v6/model"
 	"github.com/patrickmn/go-cache"
@@ -9,6 +10,12 @@ import (
 
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 )
+
+// icons to use to replace users' photos if the email client does not support
+// embedded inline base64 images. A random icon will be chosen for each user
+// FIXME: the icon for a user will change everytime the user is loaded again,
+// but at least it is constant in all the emails sent in a given run
+var usersAltText = []string{"🐙", "🐶", "👻", "🐱", "🐴", "👽", "👾", "🐮", "🐭"}
 
 func (mm *MattermostBackend) SendEmailToUser(user *model.User, subject string, body string) error {
 	err := mm.api.SendMail(user.Email, subject, body)
@@ -164,6 +171,7 @@ func (mm *MattermostBackend) loadUsers(userID string) ([]*model.User, error) {
 			IsBot:         u.IsBot,
 			Roles:         u.GetRoles(),
 			Status:        userStatuses[u.Id],
+			AltText:       usersAltText[rand.Intn(len(usersAltText))],
 		}
 
 		// add profile image

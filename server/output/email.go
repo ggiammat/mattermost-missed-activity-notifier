@@ -34,6 +34,7 @@ type postData struct {
 	ChannelName              string
 	Message                  template.HTML
 	SenderPhoto              template.URL
+	SenderAltPhoto           string
 	PostPhoto                string
 	Time                     string
 	ShowChannelIcon          bool
@@ -197,12 +198,13 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 			author, _ := backend.GetUser(conv.RootPost.AuthorID)
 
 			p := postData{
-				SenderName:  author.DisplayName(),
-				Message:     formatMessage(conv.RootPost.Message, serverURL),
-				Time:        conv.RootPost.CreatedAt.Format(time.RFC822),
-				SenderPhoto: toBase64(author.Image),
-				Link:        buildMessageLink(conv.RootPost),
-				AlreadyRead: !conv.IsRootMessageUnread,
+				SenderName:     author.DisplayName(),
+				Message:        formatMessage(conv.RootPost.Message, serverURL),
+				Time:           conv.RootPost.CreatedAt.Format(time.RFC822),
+				SenderPhoto:    toBase64(author.Image),
+				SenderAltPhoto: author.AltText,
+				Link:           buildMessageLink(conv.RootPost),
+				AlreadyRead:    !conv.IsRootMessageUnread,
 			}
 
 			cv := &conversationData{RootPost: p}
@@ -213,11 +215,12 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 				author, _ := backend.GetUser(rep.AuthorID)
 
 				p := postData{
-					SenderName:  author.DisplayName(),
-					Message:     formatMessage(rep.Message, serverURL),
-					Time:        rep.CreatedAt.Format(time.RFC822),
-					SenderPhoto: toBase64(author.Image),
-					Link:        buildMessageLink(rep),
+					SenderName:     author.DisplayName(),
+					Message:        formatMessage(rep.Message, serverURL),
+					Time:           rep.CreatedAt.Format(time.RFC822),
+					SenderPhoto:    toBase64(author.Image),
+					SenderAltPhoto: author.AltText,
+					Link:           buildMessageLink(rep),
 				}
 				replies = append(replies, p)
 			}
