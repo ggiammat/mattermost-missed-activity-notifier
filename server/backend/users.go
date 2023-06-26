@@ -171,7 +171,8 @@ func (mm *MattermostBackend) loadUsers(userID string) ([]*model.User, error) {
 			IsBot:         u.IsBot,
 			Roles:         u.GetRoles(),
 			Status:        userStatuses[u.Id],
-			AltText:       usersAltText[rand.Intn(len(usersAltText))],
+			//nolint:gosec
+			AltText: usersAltText[rand.Intn(len(usersAltText))],
 		}
 
 		// add profile image
