@@ -89,6 +89,8 @@ func (man *MissedActivityNotifier) GetChannelMissedActivity(channelMembership *m
 		return nil, errors.Wrap(err, "Error getting channel posts")
 	}
 
+	man.backend.LogDebug("Retrieved %d posts for user '%s' in channel '%s' (from %d)", len(posts), channelMembership.User.Username, channelMembership.Channel.GetChannelName(channelMembership.User), lowerBound)
+
 	if len(posts) == 0 {
 		return nil, nil
 	}
@@ -143,6 +145,8 @@ func (man *MissedActivityNotifier) GetUserMissedActivity(team *model.Team, user 
 		UnreadChannels: []model.ChannelMissedActivity{},
 		Logs:           []string{},
 	}
+
+	man.backend.LogDebug("Getting missed activity for user '%s' in team '%s'", user.Username, team.Name)
 
 	// 1. get channels memeberships
 	mb, err := man.backend.GetChannelMembersForUser(team.ID, user.ID, includeDirectMessages)
