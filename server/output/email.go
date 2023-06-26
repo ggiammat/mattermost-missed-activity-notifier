@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mergestat/timediff"
 	"github.com/pkg/errors"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
@@ -141,6 +142,10 @@ func MarkdownToHTML(markdown, siteURL string) (string, error) {
 	return b.String(), nil
 }
 
+func formatTime(time time.Time) string {
+	return timediff.TimeDiff(time)
+}
+
 func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.TeamMissedActivity, props *EmailTemplateProps) (string, string, error) {
 	serverName := backend.GetServerName()
 	serverURL := backend.GetServerURL()
@@ -200,7 +205,7 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 			p := postData{
 				SenderName:     author.DisplayName(),
 				Message:        formatMessage(conv.RootPost.Message, serverURL),
-				Time:           conv.RootPost.CreatedAt.Format(time.RFC822),
+				Time:           formatTime(conv.RootPost.CreatedAt),
 				SenderPhoto:    toBase64(author.Image),
 				SenderAltPhoto: author.AltText,
 				Link:           buildMessageLink(conv.RootPost),
@@ -217,7 +222,7 @@ func BuildHTMLEmail(backend *backend.MattermostBackend, missedActivity *model.Te
 				p := postData{
 					SenderName:     author.DisplayName(),
 					Message:        formatMessage(rep.Message, serverURL),
-					Time:           rep.CreatedAt.Format(time.RFC822),
+					Time:           formatTime(rep.CreatedAt),
 					SenderPhoto:    toBase64(author.Image),
 					SenderAltPhoto: author.AltText,
 					Link:           buildMessageLink(rep),
