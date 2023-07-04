@@ -150,19 +150,13 @@ func (p *MANPlugin) executeCommandImpl(userID string, command string, args []str
 
 // Mattermost Hook
 func (p *MANPlugin) ExecuteCommand(_ *plugin.Context, args *mm_model.CommandArgs) (*mm_model.CommandResponse, *mm_model.AppError) {
-	user, uErr := p.backend.GetUser(args.UserId)
-
-	if uErr != nil {
-		return &mm_model.CommandResponse{}, mm_model.NewAppError("MANAppError", "command error", nil, "error getting user", 1).Wrap(uErr)
-	}
-
 	tokens := strings.Split(strings.Trim(args.Command, " "), " ")
 
 	if len(tokens) < 2 {
 		return &mm_model.CommandResponse{Text: "Command not specified"}, nil
 	}
 
-	res, err := p.executeCommandImpl(user.ID, tokens[1], tokens[2:])
+	res, err := p.executeCommandImpl(args.UserId, tokens[1], tokens[2:])
 
 	if err != nil {
 		return &mm_model.CommandResponse{Text: res}, mm_model.NewAppError("MANAppError", "command error", nil, "error executing command", 1).Wrap(err)
