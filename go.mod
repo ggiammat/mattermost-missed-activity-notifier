@@ -64,8 +64,9 @@ require (
 	github.com/wiggin77/srslog v1.0.1 // indirect
 	github.com/yuin/goldmark v1.4.13
 	golang.org/x/crypto v0.0.0-20220817201139-bc19a97f63c8 // indirect
+	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
 	golang.org/x/net v0.0.0-20220812174116-3211cb980234 // indirect
-	golang.org/x/sys v0.0.0-20220817070843-5a390386f1f2 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220817144833-d7fd3f11b9b1 // indirect
 	google.golang.org/grpc v1.48.0 // indirect

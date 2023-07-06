@@ -112,6 +112,11 @@ func (man *MissedActivityNotifier) GetChannelMissedActivity(channelMembership *m
 		} else { // add replies to conversations
 			conversation := rootPostsMap[post.RootID]
 
+			if conversation == nil {
+				man.backend.LogWarn("Root post not loaded!!")
+				man.backend.LogDebug("This should never happen. Details for debugging purposes Post: '%s' (%s), Root Post ID: %s", post.Message, post.ID, post.RootID)
+			}
+
 			valid := man.ProcessMessageValidForNotification(post, conversation, channelMembership.User, crs)
 			if valid {
 				conversation.AppendReply(post)

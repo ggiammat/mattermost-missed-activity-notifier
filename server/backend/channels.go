@@ -6,7 +6,10 @@ import (
 	"strings"
 	"time"
 
+	mm_model "github.com/mattermost/mattermost-server/v6/model"
 	"github.com/patrickmn/go-cache"
+	"github.com/pkg/errors"
+	"golang.org/x/exp/slices"
 
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/model"
 )
@@ -52,6 +55,10 @@ func (mm *MattermostBackend) GetChannel(channelID string) (*model.Channel, error
 	return res, nil
 }
 
+// returns the list of posts in a channel between two given timestamp.
+// The returned list of posts also includes root posts even of the
+// requested range to let the caller be able to rebuild the threads.
+// results are returned from the oldest to the newer with root posts at the beginning
 func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot int64) ([]*model.Post, error) {
 	cacheKey := fmt.Sprintf("%s_%d_%d", channelID, fromt, tot)
 
@@ -62,18 +69,45 @@ func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot 
 
 	mm.LogDebug("Cache MISS for posts with cacheKey=%s", cacheKey)
 
-	posts, err := mm.api.GetPostsSince(channelID, fromt)
+	apiPosts, err := mm.api.GetPostsSince(channelID, fromt)
 	if err != nil {
 		return nil, fmt.Errorf("error getting posts from db: %s", err)
 	}
 
+	// Ensure that all root posts are also loaded
+	// usually the Mattermost GetPostsSince() api includes root posts even if
+	// they are created before the requested timestamp. However we observed
+	// some situations where this does not happen. For instance if a reply
+	// has a reaction, then the root post of this reply is not returned (if
+	// older than the requested timestamp)...
+	rootPosts := []*mm_model.Post{}
+	rootPostsIds := []string{}
+	for _, p := range apiPosts.Posts {
+		if p.RootId != "" && !slices.Contains(apiPosts.Order, p.RootId) && !slices.Contains(rootPostsIds, p.RootId) {
+			mm.LogDebug("Loading root post for post %s", p.Id)
+			rootPost, errRP := mm.api.GetPost(p.RootId)
+			if errRP != nil {
+				return nil, errors.Wrap(errRP, "error loading root post")
+			}
+			rootPosts = append(rootPosts, rootPost)
+			rootPostsIds = append(rootPostsIds, rootPost.Id)
+		}
+	}
+
+	allPosts := []*mm_model.Post{}
+	for _, p := range rootPosts {
+		allPosts = append([]*mm_model.Post{p}, allPosts...)
+	}
+	for v := 0; v < len(apiPosts.Order); v++ {
+		allPosts = append([]*mm_model.Post{apiPosts.Posts[apiPosts.Order[v]]}, allPosts...)
+	}
+
 	res := []*model.Post{}
 
-	for v := 0; v < len(posts.Order); v++ {
-		post := posts.Posts[posts.Order[v]]
-
-		// discard posts out of the range, deleted or of type different than normal (e.g., system messages)
+	for _, post := range allPosts {
+		// discard posts out of the range or deleted
 		if post.CreateAt > tot || post.DeleteAt > 0 {
+			mm.LogDebug("Discarding post '%s' (%s) createAt: %d, tot:  %d, deleteAT: %d", post.Message, post.Id, post.CreateAt, tot, post.DeleteAt)
 			continue
 		}
 
@@ -114,7 +148,7 @@ func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot 
 			FromBot:         fromBot,
 			IsSystemMessage: strings.HasPrefix(post.Type, "system_"),
 		}
-		res = append([]*model.Post{newpost}, res...)
+		res = append(res, newpost)
 	}
 
 	mm.postsCache.Set(cacheKey, res, cache.DefaultExpiration)
