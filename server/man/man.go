@@ -52,7 +52,7 @@ func (man *MissedActivityNotifier) ProcessMessageValidForNotification(post *mode
 		return false
 	}
 
-	if (model.MessageContainsMentions(post.Message, user.Username) || cma.Channel.IsDirect() || conv.Following) && man.UserStatuses.GetStatusForUserAtTime(user.ID, post.CreatedAt) != userstatus.Online {
+	if (model.MessageContainsMentions(post.Message, user.Username) || cma.Channel.IsDirect() || cma.Channel.IsGroup() || conv.Following) && man.UserStatuses.GetStatusForUserAtTime(user.ID, post.CreatedAt) != userstatus.Online {
 		if user.MANPreferences.InlcudeCountOfMessagesNotifiedByMM {
 			cma.NotifiedByMMMessages++
 		}
@@ -114,7 +114,10 @@ func (man *MissedActivityNotifier) GetChannelMissedActivity(channelMembership *m
 
 			if conversation == nil {
 				man.backend.LogWarn("Root post not loaded!!")
-				man.backend.LogDebug("This should never happen. Details for debugging purposes Post: '%s' (%s), Root Post ID: %s", post.Message, post.ID, post.RootID)
+				man.backend.LogDebug("This should never happen, the plugin will crash. Details for debugging Post(id:%s, '%s'), Root Post ID: %s, Posts ids printed below in order", post.ID, post.Message, post.RootID)
+				for _, p := range posts {
+					man.backend.LogDebug("%s", p.ID)
+				}
 			}
 
 			valid := man.ProcessMessageValidForNotification(post, conversation, channelMembership.User, crs)

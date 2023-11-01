@@ -129,6 +129,10 @@ func (ch *Channel) IsDirect() bool {
 	return ch.Type == "D"
 }
 
+func (ch *Channel) IsGroup() bool {
+	return ch.Type == "G"
+}
+
 type ChannelMissedActivity struct {
 	Channel                    *Channel
 	User                       *User
