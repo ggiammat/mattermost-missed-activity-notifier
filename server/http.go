@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/mattermost/mattermost-server/v6/plugin"
+	"github.com/mattermost/mattermost/server/public/plugin"
 
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/man"
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/output"

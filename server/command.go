@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	mm_model "github.com/mattermost/mattermost-server/v6/model"
-	"github.com/mattermost/mattermost-server/v6/plugin"
+	mm_model "github.com/mattermost/mattermost/server/public/model"
+	"github.com/mattermost/mattermost/server/public/plugin"
 	"github.com/oleiade/reflections"
 	"github.com/pkg/errors"
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	mm_model "github.com/mattermost/mattermost-server/v6/model"
+	mm_model "github.com/mattermost/mattermost/server/public/model"
 	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 
@@ -46,7 +46,7 @@ func (mm *MattermostBackend) GetUser(userID string) (*model.User, error) {
 }
 
 func (mm *MattermostBackend) IsUserFollowingPost(postID string, userID string) bool {
-	rows, err := mm.db.Query("SELECT Following FROM ThreadMemberships WHERE PostId = ? AND UserId = ?", postID, userID)
+	rows, err := mm.db.Query(fmt.Sprintf("SELECT Following FROM ThreadMemberships WHERE PostId = '%s' AND UserId = '%s'", postID, userID))
 	if err != nil {
 		mm.api.LogError(fmt.Sprintf("Error querying db for threads following: %s", err))
 	}

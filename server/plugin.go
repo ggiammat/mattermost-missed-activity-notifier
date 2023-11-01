@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mattermost/mattermost-plugin-api/cluster"
-	mm_model "github.com/mattermost/mattermost-server/v6/model"
-	"github.com/mattermost/mattermost-server/v6/plugin"
-	"github.com/mattermost/mattermost-server/v6/shared/driver"
+	mm_model "github.com/mattermost/mattermost/server/public/model"
+	"github.com/mattermost/mattermost/server/public/plugin"
+	"github.com/mattermost/mattermost/server/public/pluginapi/cluster"
+	"github.com/mattermost/mattermost/server/public/shared/driver"
 	"github.com/pkg/errors"
 
 	"github.com/ggiammat/mattermost-missed-activity-notifier/server/backend"

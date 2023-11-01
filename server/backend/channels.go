@@ -2,11 +2,12 @@ package backend
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	mm_model "github.com/mattermost/mattermost-server/v6/model"
+	mm_model "github.com/mattermost/mattermost/server/public/model"
 	"github.com/patrickmn/go-cache"
 	"github.com/pkg/errors"
 	"golang.org/x/exp/slices"
@@ -95,12 +96,8 @@ func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot 
 	}
 
 	allPosts := []*mm_model.Post{}
-	for _, p := range rootPosts {
-		allPosts = append([]*mm_model.Post{p}, allPosts...)
-	}
-	for v := 0; v < len(apiPosts.Order); v++ {
-		allPosts = append([]*mm_model.Post{apiPosts.Posts[apiPosts.Order[v]]}, allPosts...)
-	}
+	allPosts = append(allPosts, rootPosts...)
+	allPosts = append(allPosts, apiPosts.ToSlice()...)
 
 	res := []*model.Post{}
 
@@ -152,6 +149,10 @@ func (mm *MattermostBackend) GetChannelPosts(channelID string, fromt int64, tot 
 	}
 
 	mm.postsCache.Set(cacheKey, res, cache.DefaultExpiration)
+
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].CreatedAt.Before(res[j].CreatedAt)
+	})
 
 	return res, nil
 }
