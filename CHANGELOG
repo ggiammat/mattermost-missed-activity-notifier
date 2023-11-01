@@ -1,0 +1,11 @@
+
+# 0.1.1
+
+- update api to Mattermost Server 9.1
+- do not include messages in group channels because Mattermost since version 9.1 sends email notifications for this type of messages (if the user is not active)
+- made SQL statements compatible with PostgreSQL
+
+
+# 0.1.0
+
+First release
